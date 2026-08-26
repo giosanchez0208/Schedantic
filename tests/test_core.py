@@ -14,6 +14,8 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "src"))
 from stlm.convert import (DEFAULT_POLICY, Policy, l2_to_jcal, occurrence_set,
                           occurrences, resolve_date)
 from stlm.generate import generate
+from stlm.normalize import (l1_to_l2, normalize_bound, normalize_date,
+                            normalize_end_time, normalize_recur, normalize_time, parse)
 from stlm.ir import L1, L2, DateTimeSpec, L2Event, RRule
 from stlm.score import rrule_equivalence, span_prf, l2_exact_match
 
@@ -238,6 +240,76 @@ def test_generator_integrity():
           f"{resolvable}/600")
 
 
+def test_normalizer():
+    print("\n[M5] L1 -> L2 normalizer")
+    for text, want in [("8am", "08:00"), ("8", "08:00"), ("8pm", "20:00"),
+                       ("12nn", "12:00"), ("noon", "12:00"), ("12mn", "00:00"),
+                       ("0800", "08:00"), ("8:30", "08:30"), ("3", "15:00")]:
+        got, _ = normalize_time(text)
+        check(f"time {text!r} -> {want}", got == want, f"got {got}")
+
+    # A bare end time is constrained by the start: "8-5" is 08:00-17:00.
+    got, _ = normalize_end_time("5", "08:00")
+    check("end '5' after start 08:00 -> 17:00", got == "17:00", f"got {got}")
+    got, _ = normalize_end_time("12", "08:00")
+    check("end '12' after start 08:00 -> 12:00", got == "12:00", f"got {got}")
+
+    for text, want in [("tmrw", "REL:TOMORROW"), ("this Mon", "REL:THIS_MO"),
+                       ("next friday", "REL:NEXT_FR"), ("Sept 3", "REL:MD_9_3"),
+                       ("day after tmrw", "REL:DAY_AFTER_TOMORROW")]:
+        got, _ = normalize_date(text)
+        check(f"date {text!r} -> {want}", got == want, f"got {got}")
+
+    for text, want in [("MWF", ["MO", "WE", "FR"]), ("TTh", ["TU", "TH"]),
+                       ("TR", ["TU", "TH"]), ("MW", ["MO", "WE"])]:
+        rr, _ = normalize_recur([text])
+        check(f"recur {text!r} -> {want}", rr and rr.byday == want,
+              str(rr.byday if rr else None))
+
+    # Redundant spans must merge, not conflict -- this is the case the
+    # annotation guide decides in favour of tagging both.
+    rr, _ = normalize_recur(["Biweekly", "every other Tuesday"])
+    check("redundant RECUR spans merge to interval=2 byday=[TU]",
+          rr and rr.interval == 2 and rr.byday == ["TU"],
+          f"{rr.interval if rr else None} {rr.byday if rr else None}")
+
+    rr, _ = normalize_recur(["every day", "except Sunday"])
+    check("negation subtracts from the base set",
+          rr and "SU" not in rr.byday and len(rr.byday) == 6, str(rr.byday if rr else None))
+
+    b, f = normalize_bound("x8")
+    check("bound 'x8' -> count=8", b.get("count") == 8, str(b))
+    b, f = normalize_bound("for 10 weeks")
+    check("bound 'for 10 weeks' -> count=10", b.get("count") == 10, str(b))
+    b, f = normalize_bound("until Dec")
+    check("bound 'until Dec' -> REL:MONTH_12", b.get("until") == "REL:MONTH_12", str(b))
+    b, f = normalize_bound("till finals")
+    check("unresolvable bound is flagged, not guessed",
+          "unresolvable_bound" in f and not b, f"{b} {f}")
+
+    l2, _ = parse("MWF 8-12NN CCC100 with Sir Jefferson")
+    e = l2.events[0]
+    check("end-to-end: MWF 8-12NN parses correctly",
+          e.dtstart.time == "08:00" and e.dtend.time == "12:00"
+          and e.rrule.byday == ["MO", "WE", "FR"],
+          f"{e.dtstart.time} {e.dtend.time if e.dtend else None} {e.rrule.byday}")
+    check("every produced L2 validates", not l2.validate(), str(l2.validate()))
+
+
+def test_known_baseline_gap():
+    print("\n[M5] known gap: no event segmentation")
+    # The rule pipeline has no way to split one line into two events, so it
+    # flattens them and silently loses the second time. This is OQ-1 / M7.5,
+    # recorded as a test so it fails loudly the day segmentation lands.
+    l2, _ = parse("Monday 12pm, Wednesday 5pm Laboratory with Sir Jeff")
+    check("KNOWN GAP: multi-event flattens to 1 event (expected to fail later)",
+          len(l2.events) == 1,
+          f"got {len(l2.events)} -- if this now says 2, segmentation works; update the test")
+    if len(l2.events) == 1 and l2.events[0].rrule:
+        check("  and it merges both weekdays under one time (the RFC 5545 trap)",
+              l2.events[0].rrule.byday == ["MO", "WE"], str(l2.events[0].rrule.byday))
+
+
 if __name__ == "__main__":
     test_fixtures_valid()
     test_jcal_emission()
@@ -246,6 +318,8 @@ if __name__ == "__main__":
     test_rfc5545_cross_product()
     test_scorer_sanity()
     test_generator_integrity()
+    test_normalizer()
+    test_known_baseline_gap()
     print("\n" + "=" * 60)
     if FAILURES:
         print(f"{len(FAILURES)} FAILURE(S):")
