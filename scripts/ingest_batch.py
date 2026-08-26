@@ -28,7 +28,7 @@ from stlm.ir import write_jsonl
 BATCH_DIR = ROOT / "corpus" / "batches"
 
 # Structural lines, with or without a leading '#'.
-CELL_RE = re.compile(r"^\[(\d+)\]\s*(.+?)\s*<(P\d),\s*currently", re.I)
+CELL_RE = re.compile(r"^\[(\d+)\]\s*(.+?)\s*<(P\d|Q\d)(?:,\s*currently)?>?", re.I)
 META_RE = re.compile(r"^(author|device)\s*:\s*(.+?)\s*$", re.I)
 STYLEWANT_RE = re.compile(r"^(style|want)\s*:", re.I)
 BATCH_RE = re.compile(r"^STLM corpus batch\s*(\d+)", re.I)

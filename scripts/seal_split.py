@@ -22,10 +22,15 @@ from stlm.ir import read_jsonl
 
 OUT = ROOT / "corpus" / "splits.json"
 
-# bryan -> TEST. He has the lowest prompt-anchoring rate (17% vs 28% and 30%)
-# and the highest distinctness ratio (45/48), so the frozen measurement is taken
-# on the cleanest available data.
-TEST_AUTHORS = ["bryan"]
+# Two authors held out, one from each writing batch.
+#
+#   bryan   batch 01. Lowest anchoring of that batch (17% vs 28% and 30%).
+#   phil    batch 02. 0% anchoring, and he wrote 14 NOT-A-SCHEDULE strings.
+#
+# The batch-02 author is not optional. Question 1 ("is it a schedule?") has a
+# threshold in TARGET.md, and only batch-02 authors wrote negatives -- a test set
+# drawn from batch 01 alone cannot measure the project's headline capability.
+TEST_AUTHORS = ["bryan", "phil"]
 
 
 def main() -> None:
@@ -77,6 +82,15 @@ def main() -> None:
             "prompts. Score with and without prompt_anchored rows.",
             "The project owner (Gio) wrote none of these, so he is a fourth unseen "
             "author at deployment. Any strings he writes later go to DEV, never test.",
+        ],
+        "reseal_history": [
+            {"date": "2026-08-26", "test": ["bryan"], "n": 48,
+             "reason": "initial seal, 3 authors"},
+            {"date": "2026-08-27", "test": ["bryan", "phil"], "n": 98,
+             "reason": "4 new authors added 200 strings that were in neither split; "
+                       "and the batch-01-only test set contained zero negatives, so "
+                       "Question 1 was unmeasurable. Legitimate because the test set "
+                       "had never been opened -- no baseline had been scored on it."},
         ],
         "rules": [
             "Test is opened at most twice: once at the M6 gate, once at the end.",

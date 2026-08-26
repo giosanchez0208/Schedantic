@@ -1,0 +1,382 @@
+# STLM corpus batch 02
+# author: me
+# device: keyboard
+#
+# HOW TO USE
+#   Write one string per line under each '##' heading.
+#   Blank lines are ignored. Lines starting with # are ignored.
+#   Write what you would ACTUALLY type. Typos stay. Don't clean it up.
+#   Can't think of one? Leave it blank and move on. Blank is fine.
+#   Weird/unsure? Write it anyway and put ?? at the end of the line.
+#
+# THREE KINDS OF CELL IN THIS BATCH:
+#   [SCHEDULE]  a normal schedule string
+#   [NOT-A-SCHEDULE]  a message that must NOT become a calendar event.
+#       These are the most valuable cells here. The corpus has ZERO of them
+#       so far, and 'is it a schedule?' is now a scored question.
+#       Write real messages, not gibberish -- the point is that they LOOK
+#       schedulable to a dumb parser and are not.
+#   [CANNOT-PIN-DOWN]  a real event that no calendar slot could capture.
+#
+# IF SOMEONE ELSE TYPES SOME: add a line like
+#   author: p1
+#   device: phone
+# and everything after it is credited to them. One line, do not skip it.
+#
+# DO NOT read documentation/IR_SPEC_v0.md before writing.
+
+# author: kara
+# device: phone
+
+## [001] COUNT bound (for 10 weeks, x8)   <P1, currently 2.7%>
+#     style:  phone shorthand | MIXED cAsInG | time/day FIRST, title after | medium
+#     domain: errands / chores   <- vary the SUBJECT, not just the format
+#     shape:  A recurring event that happens a FIXED NUMBER OF TIMES, with the number stated.
+
+tue 6am dEep clean stockroom, 4x total
+
+## [002] Bare hour, no am/pm ('MW 8')   <P3, currently 35.5%>
+#     style:  informal | Normal Caps | title FIRST, time/day after | very short (under 20 chars)
+#     domain: sports / fitness   <- vary the SUBJECT, not just the format
+#     shape:  A time with NO am/pm marker at all. Pick hours where the intended meaning is obvious to you but not stated.
+
+Pickleball TR 7
+
+## [003] Interval recurrence (every other, biweekly)   <P1, currently 3.7%>
+#     style:  phone shorthand | all lowercase | time split around the title | long (50+ chars)
+#     domain: food / cooking   <- vary the SUBJECT, not just the format
+#     shape:  A recurrence that skips periods -- happens every second or third week rather than every week.
+
+every other thurs supper club at my place, prep starts 4pm
+
+## [004] NOT-A-SCHEDULE   <Q1>
+#     style:  phone shorthand | all lowercase
+#     shape:  A question about when something is, rather than a statement scheduling it.
+#     !!      Must NOT create an event.
+
+when does the permit office open, 8 or 9?
+
+## [005] UNTIL bound (until December, till finals)   <P1, currently 4.7%>
+#     style:  phone shorthand | MIXED cAsInG | title FIRST, time/day after | medium
+#     domain: food / cooking   <- vary the SUBJECT, not just the format
+#     shape:  A recurring event with a stated END POINT: a month, a date, or a named end-of-term milestone.
+
+soup speCials every mon til end of march
+
+## [006] Negated recurrence (except Friday)   <P1, currently 4.1%>
+#     style:  phone shorthand | Normal Caps | title FIRST, time/day after | medium
+#     domain: food / cooking   <- vary the SUBJECT, not just the format
+#     shape:  A recurrence stated as an exclusion: happens on a broad schedule, minus certain days.
+
+Pastry drop from Tasha daily except Sun
+
+## [007] NOT-A-SCHEDULE   <Q1>
+#     style:  informal | all lowercase
+#     shape:  A message about a schedule that CANCELS or negates rather than creating one.
+#     !!      Must NOT create an event.
+
+scratch tuesday, mia can't cover the register
+
+## [008] CANNOT-PIN-DOWN   <Q1>
+#     style:  phone shorthand | all lowercase
+#     shape:  A real event with a time reference so vague no specific slot could be chosen.
+#     !!      Should be flagged unresolvable, not guessed.
+
+coffee w/ priya sometime after the holiday rush dies down
+
+## [009] CANNOT-PIN-DOWN   <Q1>
+#     style:  institutional | MIXED cAsInG
+#     shape:  A real event with a time reference so vague no specific slot could be chosen.
+#     !!      Should be flagged unresolvable, not guessed.
+
+The Landlord will schedule the roof inspection at some point this Quarter, tenants notified 48 hrs prior
+
+## [010] NOT-A-SCHEDULE   <Q1>
+#     style:  phone shorthand | all lowercase
+#     shape:  A normal message that happens to contain a weekday word used NON-temporally. Think of days that are also names, verbs, or parts of other words.
+#     !!      Must NOT be schedulable.
+
+they got wed at city hall last week, 2 witnesses only
+
+## [011] Location (Rm 201, @ gym, online)   <P3, currently 19.1%>
+#     style:  institutional | ALL CAPS | title FIRST, time/day after | medium
+#     domain: travel / commute   <- vary the SUBJECT, not just the format
+#     shape:  An event with a place attached -- a room, a building, or an online platform.
+
+VENDOR SHUTTLE DEPARTS 5:30AM FROM LOT C, GATE 4
+
+## [012] NOT-A-SCHEDULE   <Q1>
+#     style:  informal | ALL CAPS
+#     shape:  A normal message containing a month name used NON-temporally -- as a person's name, a verb, or an ordinary noun.
+#     !!      Must NOT be schedulable.
+
+AUGUST FROM THE FLOWER STALL IS TAKING OVER THE CORNER SPOT
+
+## [013] CANNOT-PIN-DOWN   <Q1>
+#     style:  informal | Normal Caps
+#     shape:  A recurring event with a condition attached that a calendar cannot express.
+#     !!      Should be flagged unrepresentable.
+
+Inventory count every time a big consignment drop lands, whenever that is
+
+## [014] Multiple events in one string   <P2, currently 14.5%>
+#     style:  institutional | Normal Caps | time/day FIRST, title after | very short (under 20 chars)
+#     domain: side hustle   <- vary the SUBJECT, not just the format
+#     shape:  ONE line describing TWO OR MORE separate events at different days/times.
+
+Fri set, Sun strike
+
+## [015] DURATION instead of end time (for 2 hrs)   <P1, currently 4.3%>
+#     style:  phone shorthand | MIXED cAsInG | time split around the title | medium
+#     domain: side hustle   <- vary the SUBJECT, not just the format
+#     shape:  A start time plus HOW LONG it lasts, instead of an end time.
+
+sun 8am booth Setup at the flea for 3 hrs
+
+## [016] NOT-A-SCHEDULE   <Q1>
+#     style:  institutional | MIXED cAsInG
+#     shape:  Something you'd actually send in a group chat that carries no scheduling information whatsoever. Replies, acknowledgements, reactions.
+#     !!      Must NOT be schedulable.
+
+Received, thanks — Looping in Nadine on this
+
+## [017] Explicit time RANGES (8-12, 9:30 to 11)   <P3, currently 15.6%>
+#     style:  phone shorthand | all lowercase | time split around the title | long (50+ chars)
+#     domain: pets   <- vary the SUBJECT, not just the format
+#     shape:  An event with BOTH a start and an end time, joined by whatever separator you'd actually type.
+
+sat 10 ledger's nail trim + shots at the mobile vet til 12:30
+
+## [018] Absolute date-of-month (Sept 3, the 15th)   <P3, currently 17.0%>
+#     style:  phone shorthand | MIXED cAsInG | time/day FIRST, title after | medium
+#     domain: work / meetings   <- vary the SUBJECT, not just the format
+#     shape:  A specific calendar date -- month plus day number, or an ordinal day.
+
+the 15th 12 noon inVentory sync w nadine
+
+## [019] Named attendee (with Sir Jefferson)   <P2, currently 6.2%>
+#     style:  informal | MIXED cAsInG | time split around the title | long (50+ chars)
+#     domain: sports / fitness   <- vary the SUBJECT, not just the format
+#     shape:  An event with a named person attending, using whatever honorific/nickname you'd actually use.
+
+sat 8 volleyball w Coach Reggie n the rec league crew, done by 11
+
+## [020] Explicit meridiem (8am, 5PM, 12NN)   <P3, currently 35.0%>
+#     style:  informal | MIXED cAsInG | title FIRST, time/day after | long (50+ chars)
+#     domain: hobby / lessons   <- vary the SUBJECT, not just the format
+#     shape:  A time WITH an explicit am/pm/noon/midnight marker, including local conventions for noon.
+
+Pottery class at the downtown Annex studio thurs nights, 7PM
+
+## [021] Interval recurrence (every other, biweekly)   <P1, currently 3.7%>
+#     style:  informal | MIXED cAsInG | time split around the title | medium
+#     domain: church / faith   <- vary the SUBJECT, not just the format
+#     shape:  A recurrence that skips periods -- happens every second or third week rather than every week.
+
+every 2nd sun hospitality Team at church, 8am call
+
+## [022] Named date (christmas, holy week, undas)   <P0, currently 0.0%>
+#     style:  informal | all lowercase | time split around the title | very short (under 20 chars)
+#     domain: food / cooking   <- vary the SUBJECT, not just the format
+#     shape:  An event pinned to a named day rather than a date -- a holiday, a feast day, or a season everyone knows by name.
+
+xmas eve roast 4pm
+
+## [023] Interval recurrence (every other, biweekly)   <P1, currently 3.7%>
+#     style:  institutional | MIXED cAsInG | title FIRST, time/day after | very short (under 20 chars)
+#     domain: food / cooking   <- vary the SUBJECT, not just the format
+#     shape:  A recurrence that skips periods -- happens every second or third week rather than every week.
+
+Menu reSet q2 wks
+
+## [024] Relative dates (tmrw, this Mon)   <P2, currently 10.9%>
+#     style:  informal | all lowercase | time split around the title | long (50+ chars)
+#     domain: side hustle   <- vary the SUBJECT, not just the format
+#     shape:  A date expressed relative to now rather than as a calendar date, in whatever abbreviation you'd type.
+
+tmrw i'm styling the engagement party at the barn, load in by 3
+
+## [025] NOT-A-SCHEDULE   <Q1>
+#     style:  phone shorthand | all lowercase
+#     shape:  A question about when something is, rather than a statement scheduling it.
+#     !!      Must NOT create an event.
+
+when's dez free to shoot the new arrivals?
+
+## [026] UNTIL bound (until December, till finals)   <P1, currently 4.7%>
+#     style:  informal | MIXED cAsInG | title FIRST, time/day after | medium
+#     domain: money / admin   <- vary the SUBJECT, not just the format
+#     shape:  A recurring event with a stated END POINT: a month, a date, or a named end-of-term milestone.
+
+Tax set aside every friday til aPril
+
+## [027] DURATION instead of end time (for 2 hrs)   <P1, currently 4.3%>
+#     style:  phone shorthand | Normal Caps | time/day FIRST, title after | long (50+ chars)
+#     domain: school / classes   <- vary the SUBJECT, not just the format
+#     shape:  A start time plus HOW LONG it lasts, instead of an end time.
+
+Every Tues 6pm for 90 mins, small biz bookkeeping at the comm college
+
+## [028] Multiple events in one string   <P2, currently 14.5%>
+#     style:  phone shorthand | MIXED cAsInG | time/day FIRST, title after | very short (under 20 chars)
+#     domain: food / cooking   <- vary the SUBJECT, not just the format
+#     shape:  ONE line describing TWO OR MORE separate events at different days/times.
+
+fri prep, sat Bake
+
+## [029] NOT-A-SCHEDULE   <Q1>
+#     style:  institutional | Normal Caps
+#     shape:  A normal message that happens to contain a weekday word used NON-temporally. Think of days that are also names, verbs, or parts of other words.
+#     !!      Must NOT be schedulable.
+
+Please direct all invoices to Ms. Sunday in Accounts Payable.
+
+## [030] NOT-A-SCHEDULE   <Q1>
+#     style:  institutional | ALL CAPS
+#     shape:  A message about a schedule that CANCELS or negates rather than creating one.
+#     !!      Must NOT create an event.
+
+THE MONDAY VENDOR MEETING IS CANCELLED UNTIL FURTHER NOTICE
+
+## [031] Named date (christmas, holy week, undas)   <P0, currently 0.0%>
+#     style:  informal | Normal Caps | title FIRST, time/day after | medium
+#     domain: health / appointments   <- vary the SUBJECT, not just the format
+#     shape:  An event pinned to a named day rather than a date -- a holiday, a feast day, or a season everyone knows by name.
+
+Dad's cardiology follow up the week after Thanksgiving ??
+
+## [032] NOT-A-SCHEDULE   <Q1>
+#     style:  informal | ALL CAPS
+#     shape:  A message with numbers in it that are NOT times -- prices, counts, room numbers on their own, scores, ages.
+#     !!      Must NOT be schedulable.
+
+THE VINTAGE MIRRORS ARE 240 EACH AND I ONLY HAVE 3 LEFT
+
+## [033] COUNT bound (for 10 weeks, x8)   <P1, currently 2.7%>
+#     style:  phone shorthand | Normal Caps | title FIRST, time/day after | long (50+ chars)
+#     domain: volunteering   <- vary the SUBJECT, not just the format
+#     shape:  A recurring event that happens a FIXED NUMBER OF TIMES, with the number stated.
+
+Food bank sorting shift sat mornings, signed up for 6 of them
+
+## [034] COUNT bound (for 10 weeks, x8)   <P1, currently 2.7%>
+#     style:  informal | ALL CAPS | title FIRST, time/day after | long (50+ chars)
+#     domain: food / cooking   <- vary the SUBJECT, not just the format
+#     shape:  A recurring event that happens a FIXED NUMBER OF TIMES, with the number stated.
+
+CANNING SESSIONS WITH MOM SUNDAY AFTERNOONS, 5 BATCHES TOTAL
+
+## [035] NOT-A-SCHEDULE   <Q1>
+#     style:  phone shorthand | ALL CAPS
+#     shape:  A message with numbers in it that are NOT times -- prices, counts, room numbers on their own, scores, ages.
+#     !!      Must NOT be schedulable.
+
+UNIT 12 IS 1800 A MONTH, 400 OVER WHAT I WANTED
+
+## [036] Relative dates (tmrw, this Mon)   <P2, currently 10.9%>
+#     style:  phone shorthand | MIXED cAsInG | title FIRST, time/day after | medium
+#     domain: side hustle   <- vary the SUBJECT, not just the format
+#     shape:  A date expressed relative to now rather than as a calendar date, in whatever abbreviation you'd type.
+
+balloon arch quote thIs mon by eod
+
+## [037] Explicit time RANGES (8-12, 9:30 to 11)   <P3, currently 15.6%>
+#     style:  informal | all lowercase | title FIRST, time/day after | long (50+ chars)
+#     domain: health / appointments   <- vary the SUBJECT, not just the format
+#     shape:  An event with BOTH a start and an end time, joined by whatever separator you'd actually type.
+
+annual physical + bloodwork at the clinic tues 8:45 to 10:15
+
+## [038] Negated recurrence (except Friday)   <P1, currently 4.1%>
+#     style:  institutional | ALL CAPS | title FIRST, time/day after | very short (under 20 chars)
+#     domain: work / meetings   <- vary the SUBJECT, not just the format
+#     shape:  A recurrence stated as an exclusion: happens on a broad schedule, minus certain days.
+
+HUDDLE M-F NOT WED
+
+## [039] UNTIL bound (until December, till finals)   <P1, currently 4.7%>
+#     style:  phone shorthand | MIXED cAsInG | time split around the title | long (50+ chars)
+#     domain: volunteering   <- vary the SUBJECT, not just the format
+#     shape:  A recurring event with a stated END POINT: a month, a date, or a named end-of-term milestone.
+
+every wed 5pm shelter dog walking shift til the Adoption drive in may
+
+## [040] Named date (christmas, holy week, undas)   <P0, currently 0.0%>
+#     style:  institutional | MIXED cAsInG | time/day FIRST, title after | medium
+#     domain: food / cooking   <- vary the SUBJECT, not just the format
+#     shape:  An event pinned to a named day rather than a date -- a holiday, a feast day, or a season everyone knows by name.
+
+Thanksgiving eve: staff Potluck in the back room
+
+## [041] Relative dates (tmrw, this Mon)   <P2, currently 10.9%>
+#     style:  institutional | all lowercase | title FIRST, time/day after | medium
+#     domain: hobby / lessons   <- vary the SUBJECT, not just the format
+#     shape:  A date expressed relative to now rather than as a calendar date, in whatever abbreviation you'd type.
+
+the knitting circle intake session is this coming tues
+
+## [042] Named attendee (with Sir Jefferson)   <P2, currently 6.2%>
+#     style:  institutional | MIXED cAsInG | title FIRST, time/day after | medium
+#     domain: pets   <- vary the SUBJECT, not just the format
+#     shape:  An event with a named person attending, using whatever honorific/nickname you'd actually use.
+
+Wellness Exam for Ledger w/ Dr. Okafor on the 21st
+
+## [043] Named date (christmas, holy week, undas)   <P0, currently 0.0%>
+#     style:  institutional | MIXED cAsInG | title FIRST, time/day after | long (50+ chars)
+#     domain: health / appointments   <- vary the SUBJECT, not just the format
+#     shape:  An event pinned to a named day rather than a date -- a holiday, a feast day, or a season everyone knows by name.
+
+Flu Shot clinic at the pharmacy runs the whole week Before thanksgiving
+
+## [044] NOT-A-SCHEDULE   <Q1>
+#     style:  institutional | all lowercase
+#     shape:  A normal message containing a month name used NON-temporally -- as a person's name, a verb, or an ordinary noun.
+#     !!      Must NOT be schedulable.
+
+you may collect the permit at window 3 once processing clears
+
+## [045] NOT-A-SCHEDULE   <Q1>
+#     style:  phone shorthand | MIXED cAsInG
+#     shape:  Something you'd actually send in a group chat that carries no scheduling information whatsoever. Replies, acknowledgements, reactions.
+#     !!      Must NOT be schedulable.
+
+got it, ThAnks — no notes from me
+
+## [046] NOT-A-SCHEDULE   <Q1>
+#     style:  phone shorthand | MIXED cAsInG
+#     shape:  A normal message that happens to contain a weekday word used NON-temporally. Think of days that are also names, verbs, or parts of other words.
+#     !!      Must NOT be schedulable.
+
+the pallet Sat in the alley for 2 hrs before anyone flagged it
+
+## [047] Weekday day-codes (MWF, TTh, TR)   <P3, currently 52.3%>
+#     style:  phone shorthand | MIXED cAsInG | time split around the title | long (50+ chars)
+#     domain: money / admin   <- vary the SUBJECT, not just the format
+#     shape:  A repeating class/event on specific weekdays, written as a day-code cluster rather than full day names.
+
+MWF recEipts + deposit run, 7am before we unlock the doors
+
+## [048] CANNOT-PIN-DOWN   <Q1>
+#     style:  phone shorthand | MIXED cAsInG
+#     shape:  A recurring event with a condition attached that a calendar cannot express.
+#     !!      Should be flagged unrepresentable.
+
+pickup ball whenever we can get 8 people, mostly Sundays ??
+
+## [049] Weekday day-codes (MWF, TTh, TR)   <P3, currently 52.3%>
+#     style:  phone shorthand | MIXED cAsInG | time split around the title | medium
+#     domain: sports / fitness   <- vary the SUBJECT, not just the format
+#     shape:  A repeating class/event on specific weekdays, written as a day-code cluster rather than full day names.
+
+TR 6 spin class Downtown til 7
+
+## [050] NOT-A-SCHEDULE   <Q1>
+#     style:  informal | ALL CAPS
+#     shape:  A normal message containing a month name used NON-temporally -- as a person's name, a verb, or an ordinary noun.
+#     !!      Must NOT be schedulable.
+
+MAY FROM THE BAKERY SAID SHE'S OUT OF THE 9 INCH ROUNDS
+
+
+# end of batch
