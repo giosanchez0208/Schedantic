@@ -18,6 +18,8 @@ from __future__ import annotations
 
 import re
 import statistics
+
+from . import holidays as _hol
 from collections import Counter, defaultdict
 
 from .generate import AXES, KEY_PAIRS, cell_is_valid
@@ -109,6 +111,12 @@ CONSTRUCTIONS = [
      "register simply cannot see this -- forum posts and parser tests do not name people.",
      "'CCC100 with Sir Jefferson', 'sync w/ boss', '1on1 with Ate Bea', 'dentist w/ Dr Cruz'.",
      "An event with a named person attending, using whatever honorific/nickname you'd actually use."),
+    ("holiday", "Named date (christmas, holy week, undas)", _hol.HOLIDAY_RE,
+     "An interpreter exists but its real rate is unmeasured -- no contributor was "
+     "ever prompted for a holiday, so 0%% in the corpus means nothing.",
+     "'xmas dinner 7pm', 'good friday mass', 'undas cemetery visit', 'holy week retreat'.",
+     "An event pinned to a named day rather than a date -- a holiday, a feast day, "
+     "or a season everyone knows by name."),
     ("location", "Location (Rm 201, @ gym, online)", LOCATION_P,
      "3.6% in harvest -- borderline against the 2% delete-the-slot threshold.",
      "'MWF 8-10 Rm 201', 'lab @ CS Bldg', 'standup on Zoom', 'PE at Court 2'.",
