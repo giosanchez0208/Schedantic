@@ -1,0 +1,925 @@
+{
+  "synthetic_balanced": {
+    "label": "synthetic_balanced",
+    "n": 20000,
+    "length": {
+      "n": 20000,
+      "chars": {
+        "p50": 38,
+        "p90": 57,
+        "p99": 75,
+        "max": 106,
+        "mean": 38.4
+      },
+      "bytes": {
+        "p50": 38,
+        "p90": 57,
+        "p99": 75,
+        "max": 108,
+        "mean": 38.4
+      },
+      "byte_char_inflation": 1.0003,
+      "nonascii_chars": {
+        "U+2013 '–'": 99
+      },
+      "pct_strings_with_nonascii": 0.49
+    },
+    "casing_pct": {
+      "all_lower": 28.36,
+      "title_ish": 28.36,
+      "all_upper": 23.41,
+      "mixed": 19.88
+    },
+    "status_pct": {
+      "ok": 92.0,
+      "no_temporal": 8.0
+    },
+    "flag_pct": {
+      "multi_event": 45.52,
+      "ampm_ambiguous": 19.78,
+      "ampm_inferred": 19.78,
+      "missing_end_time": 19.71,
+      "duration_given": 17.77,
+      "all_day": 14.86,
+      "relative_date": 14.85,
+      "bounded_until": 11.15,
+      "bounded_count": 11.1,
+      "negated_recurrence": 8.98,
+      "temporal_lookalike": 4.64,
+      "recur_with_anchor": 4.58,
+      "missing_date": 2.81
+    },
+    "span_type_pct_of_strings": {
+      "SUMMARY": 92.0,
+      "RECUR": 77.16,
+      "TSTART": 77.14,
+      "PERSON": 46.17,
+      "LOCATION": 46.05,
+      "DATE": 13.4,
+      "TEND": 11.68,
+      "UNTIL": 11.31,
+      "DURATION": 10.45
+    },
+    "events_per_string_pct": {
+      "0": 8.0,
+      "1": 46.48,
+      "2": 45.52
+    },
+    "multi_event_pct": 45.52
+  },
+  "synthetic_realistic": {
+    "label": "synthetic_realistic",
+    "n": 10000,
+    "length": {
+      "n": 10000,
+      "chars": {
+        "p50": 28,
+        "p90": 45,
+        "p99": 62,
+        "max": 89,
+        "mean": 29.2
+      },
+      "bytes": {
+        "p50": 28,
+        "p90": 45,
+        "p99": 62,
+        "max": 89,
+        "mean": 29.2
+      },
+      "byte_char_inflation": 1.0007,
+      "nonascii_chars": {
+        "U+2013 '–'": 97
+      },
+      "pct_strings_with_nonascii": 0.97
+    },
+    "casing_pct": {
+      "all_lower": 41.35,
+      "title_ish": 26.91,
+      "mixed": 25.28,
+      "all_upper": 6.46
+    },
+    "status_pct": {
+      "ok": 92.0,
+      "no_temporal": 8.0
+    },
+    "flag_pct": {
+      "missing_end_time": 34.15,
+      "ampm_ambiguous": 25.09,
+      "ampm_inferred": 25.09,
+      "missing_date": 17.77,
+      "relative_date": 16.16,
+      "multi_event": 13.55,
+      "all_day": 5.94,
+      "temporal_lookalike": 4.72,
+      "recur_with_anchor": 4.16,
+      "bounded_until": 3.46,
+      "negated_recurrence": 1.36,
+      "bounded_count": 1.31,
+      "duration_given": 1.18
+    },
+    "span_type_pct_of_strings": {
+      "SUMMARY": 92.0,
+      "TSTART": 86.06,
+      "RECUR": 55.94,
+      "DATE": 33.22,
+      "PERSON": 27.7,
+      "TEND": 23.26,
+      "LOCATION": 16.11,
+      "UNTIL": 4.1,
+      "DURATION": 1.09
+    },
+    "events_per_string_pct": {
+      "0": 8.0,
+      "1": 78.45,
+      "2": 13.55
+    },
+    "multi_event_pct": 13.55
+  },
+  "coverage_balanced": {
+    "n": 20000,
+    "marginals": {
+      "recurrence_class": {
+        "none": 4568,
+        "weekly_multi": 2361,
+        "weekly_single": 2294,
+        "interval": 2293,
+        "daily": 2236,
+        "bounded_until": 2231,
+        "bounded_count": 2220,
+        "negated": 1797
+      },
+      "time_spec": {
+        "start_end": 3977,
+        "ambiguous": 3956,
+        "start_only": 3942,
+        "duration": 3554,
+        "none": 2971
+      },
+      "date_spec": {
+        "month_only": 4713,
+        "rel_simple": 4679,
+        "rel_weekday": 4627,
+        "none": 3794,
+        "absolute": 587
+      },
+      "slot_order": {
+        "temporal_split": 6152,
+        "temporal_trailing": 6133,
+        "temporal_leading": 6115
+      },
+      "register": {
+        "informal": 7726,
+        "shorthand": 6166,
+        "institutional": 6108
+      },
+      "casing": {
+        "title": 5154,
+        "lower": 5120,
+        "mixed": 5096,
+        "upper": 4630
+      },
+      "event_count": {
+        "1": 9295,
+        "2": 9105
+      },
+      "has_person": {
+        "yes": 9234,
+        "no": 9166
+      },
+      "has_location": {
+        "yes": 9210,
+        "no": 9190
+      }
+    },
+    "key_pairs": {
+      "recurrence_class|register": {
+        "none x informal": 2608,
+        "none x shorthand": 1012,
+        "none x institutional": 948,
+        "weekly_multi x shorthand": 842,
+        "weekly_single x institutional": 802,
+        "interval x informal": 794,
+        "daily x institutional": 770,
+        "weekly_multi x informal": 765,
+        "bounded_until x shorthand": 759,
+        "interval x shorthand": 757,
+        "weekly_multi x institutional": 754,
+        "weekly_single x informal": 753,
+        "bounded_count x shorthand": 743,
+        "interval x institutional": 742,
+        "daily x informal": 740,
+        "bounded_until x institutional": 740,
+        "bounded_count x informal": 740,
+        "weekly_single x shorthand": 739,
+        "bounded_count x institutional": 737,
+        "bounded_until x informal": 732,
+        "daily x shorthand": 726,
+        "negated x institutional": 615,
+        "negated x informal": 594,
+        "negated x shorthand": 588
+      },
+      "recurrence_class|time_spec": {
+        "none x duration": 655,
+        "none x ambiguous": 614,
+        "none x start_only": 601,
+        "none x start_end": 596,
+        "negated x ambiguous": 514,
+        "daily x duration": 508,
+        "interval x ambiguous": 504,
+        "none x none": 502,
+        "weekly_multi x start_end": 500,
+        "weekly_multi x ambiguous": 497,
+        "bounded_count x duration": 497,
+        "weekly_single x start_only": 497,
+        "interval x start_end": 493,
+        "daily x start_end": 493,
+        "weekly_single x duration": 491,
+        "bounded_until x start_only": 491,
+        "weekly_multi x start_only": 491,
+        "weekly_single x start_end": 487,
+        "weekly_multi x duration": 485,
+        "bounded_until x ambiguous": 479,
+        "bounded_until x start_end": 478,
+        "interval x duration": 476,
+        "interval x start_only": 475,
+        "bounded_count x start_only": 472,
+        "negated x start_end": 466,
+        "negated x start_only": 466,
+        "bounded_count x start_end": 464,
+        "weekly_single x ambiguous": 457,
+        "daily x ambiguous": 456,
+        "daily x start_only": 449,
+        "bounded_until x duration": 442,
+        "bounded_count x ambiguous": 435,
+        "weekly_multi x none": 388,
+        "weekly_single x none": 362,
+        "bounded_count x none": 352,
+        "negated x none": 351,
+        "interval x none": 345,
+        "bounded_until x none": 341,
+        "daily x none": 330
+      },
+      "recurrence_class|casing": {
+        "none x title": 1295,
+        "none x lower": 1262,
+        "none x mixed": 1242,
+        "none x upper": 769,
+        "weekly_multi x upper": 608,
+        "bounded_until x mixed": 599,
+        "daily x upper": 597,
+        "weekly_single x lower": 592,
+        "interval x mixed": 591,
+        "weekly_multi x title": 590,
+        "weekly_multi x mixed": 584,
+        "weekly_single x upper": 582,
+        "weekly_multi x lower": 579,
+        "interval x title": 575,
+        "interval x lower": 566,
+        "bounded_count x lower": 564,
+        "interval x upper": 561,
+        "weekly_single x title": 561,
+        "daily x lower": 560,
+        "bounded_until x title": 560,
+        "weekly_single x mixed": 559,
+        "bounded_count x mixed": 558,
+        "bounded_count x upper": 555,
+        "daily x title": 547,
+        "bounded_count x title": 543,
+        "bounded_until x lower": 543,
+        "daily x mixed": 532,
+        "bounded_until x upper": 529,
+        "negated x title": 483,
+        "negated x lower": 454,
+        "negated x mixed": 431,
+        "negated x upper": 429
+      },
+      "time_spec|register": {
+        "ambiguous x institutional": 1359,
+        "start_end x informal": 1331,
+        "start_only x shorthand": 1331,
+        "start_end x shorthand": 1329,
+        "ambiguous x shorthand": 1320,
+        "start_only x informal": 1320,
+        "start_end x institutional": 1317,
+        "start_only x institutional": 1291,
+        "ambiguous x informal": 1277,
+        "duration x informal": 1241,
+        "duration x shorthand": 1163,
+        "duration x institutional": 1150,
+        "none x shorthand": 1023,
+        "none x institutional": 991,
+        "none x informal": 957
+      },
+      "date_spec|register": {
+        "month_only x shorthand": 1598,
+        "rel_simple x informal": 1570,
+        "rel_simple x shorthand": 1563,
+        "month_only x institutional": 1562,
+        "rel_weekday x informal": 1554,
+        "month_only x informal": 1553,
+        "rel_simple x institutional": 1546,
+        "rel_weekday x shorthand": 1543,
+        "rel_weekday x institutional": 1530,
+        "none x institutional": 1287,
+        "none x shorthand": 1255,
+        "none x informal": 1252,
+        "absolute x shorthand": 207,
+        "absolute x informal": 197,
+        "absolute x institutional": 183
+      },
+      "event_count|recurrence_class": {
+        "1 x none": 1486,
+        "2 x none": 1482,
+        "1 x weekly_multi": 1226,
+        "2 x weekly_single": 1172,
+        "2 x interval": 1157,
+        "1 x interval": 1136,
+        "2 x weekly_multi": 1135,
+        "1 x bounded_count": 1133,
+        "1 x bounded_until": 1129,
+        "1 x weekly_single": 1122,
+        "1 x daily": 1121,
+        "2 x daily": 1115,
+        "2 x bounded_until": 1102,
+        "2 x bounded_count": 1087,
+        "1 x negated": 942,
+        "2 x negated": 855
+      }
+    },
+    "gaps": [],
+    "n_empty": 0,
+    "n_thin": 0
+  },
+  "coverage_realistic": {
+    "n": 10000,
+    "marginals": {
+      "recurrence_class": {
+        "none": 4406,
+        "weekly_multi": 1987,
+        "weekly_single": 1837,
+        "daily": 649,
+        "interval": 508,
+        "bounded_until": 346,
+        "negated": 136,
+        "bounded_count": 131
+      },
+      "time_spec": {
+        "start_only": 3415,
+        "start_end": 2564,
+        "ambiguous": 2509,
+        "none": 594,
+        "duration": 118
+      },
+      "date_spec": {
+        "none": 4850,
+        "rel_simple": 1718,
+        "rel_weekday": 1523,
+        "month_only": 652,
+        "absolute": 457
+      },
+      "slot_order": {
+        "temporal_leading": 5145,
+        "temporal_trailing": 3169,
+        "temporal_split": 886
+      },
+      "register": {
+        "informal": 4926,
+        "shorthand": 3252,
+        "institutional": 1822
+      },
+      "casing": {
+        "title": 3635,
+        "lower": 3509,
+        "mixed": 2284,
+        "upper": 572
+      },
+      "event_count": {
+        "1": 7845,
+        "2": 1355
+      },
+      "has_person": {
+        "no": 6430,
+        "yes": 2770
+      },
+      "has_location": {
+        "no": 7589,
+        "yes": 1611
+      }
+    },
+    "key_pairs": {
+      "recurrence_class|register": {
+        "none x informal": 2494,
+        "none x shorthand": 1226,
+        "weekly_multi x informal": 849,
+        "weekly_single x informal": 812,
+        "weekly_multi x shorthand": 707,
+        "none x institutional": 686,
+        "weekly_single x shorthand": 675,
+        "weekly_multi x institutional": 431,
+        "weekly_single x institutional": 350,
+        "daily x informal": 270,
+        "daily x shorthand": 251,
+        "interval x informal": 216,
+        "interval x shorthand": 183,
+        "bounded_until x informal": 168,
+        "daily x institutional": 128,
+        "bounded_until x shorthand": 115,
+        "interval x institutional": 109,
+        "bounded_count x informal": 64,
+        "bounded_until x institutional": 63,
+        "negated x informal": 53,
+        "negated x shorthand": 50,
+        "bounded_count x shorthand": 45,
+        "negated x institutional": 33,
+        "bounded_count x institutional": 22
+      },
+      "recurrence_class|time_spec": {
+        "none x start_only": 1319,
+        "none x start_end": 993,
+        "none x ambiguous": 974,
+        "weekly_multi x start_only": 730,
+        "weekly_single x start_only": 688,
+        "weekly_multi x start_end": 563,
+        "weekly_multi x ambiguous": 556,
+        "weekly_single x ambiguous": 521,
+        "weekly_single x start_end": 504,
+        "none x none": 271,
+        "daily x start_only": 243,
+        "interval x start_only": 187,
+        "daily x start_end": 178,
+        "daily x ambiguous": 173,
+        "interval x start_end": 146,
+        "interval x ambiguous": 142,
+        "bounded_until x start_only": 138,
+        "weekly_multi x none": 113,
+        "weekly_single x none": 104,
+        "bounded_until x start_end": 100,
+        "bounded_until x ambiguous": 80,
+        "negated x start_only": 63,
+        "none x duration": 49,
+        "bounded_count x start_end": 49,
+        "bounded_count x start_only": 47,
+        "daily x none": 44,
+        "negated x ambiguous": 37,
+        "negated x start_end": 31,
+        "interval x none": 27,
+        "bounded_count x ambiguous": 26,
+        "weekly_multi x duration": 25,
+        "bounded_until x none": 23,
+        "weekly_single x duration": 20,
+        "daily x duration": 11,
+        "bounded_count x none": 7,
+        "interval x duration": 6,
+        "negated x none": 5,
+        "bounded_until x duration": 5,
+        "bounded_count x duration": 2
+      },
+      "recurrence_class|casing": {
+        "none x title": 1593,
+        "none x lower": 1520,
+        "none x mixed": 1071,
+        "weekly_multi x title": 717,
+        "weekly_multi x lower": 710,
+        "weekly_single x title": 687,
+        "weekly_single x lower": 655,
+        "weekly_multi x mixed": 449,
+        "weekly_single x mixed": 376,
+        "daily x lower": 226,
+        "daily x title": 224,
+        "none x upper": 222,
+        "interval x title": 185,
+        "interval x lower": 177,
+        "daily x mixed": 145,
+        "bounded_until x title": 128,
+        "bounded_until x lower": 124,
+        "weekly_single x upper": 119,
+        "interval x mixed": 117,
+        "weekly_multi x upper": 111,
+        "bounded_until x mixed": 67,
+        "negated x lower": 57,
+        "bounded_count x title": 55,
+        "daily x upper": 54,
+        "negated x title": 46,
+        "bounded_count x lower": 40,
+        "negated x mixed": 30,
+        "interval x upper": 29,
+        "bounded_count x mixed": 29,
+        "bounded_until x upper": 27,
+        "bounded_count x upper": 7,
+        "negated x upper": 3
+      },
+      "time_spec|register": {
+        "start_only x informal": 1514,
+        "start_only x shorthand": 1234,
+        "ambiguous x informal": 1169,
+        "start_end x informal": 1143,
+        "start_end x shorthand": 906,
+        "ambiguous x shorthand": 851,
+        "start_only x institutional": 667,
+        "start_end x institutional": 515,
+        "ambiguous x institutional": 489,
+        "none x informal": 257,
+        "none x shorthand": 213,
+        "none x institutional": 124,
+        "duration x shorthand": 48,
+        "duration x informal": 43,
+        "duration x institutional": 27
+      },
+      "date_spec|register": {
+        "none x informal": 2175,
+        "none x shorthand": 1734,
+        "none x institutional": 941,
+        "rel_simple x informal": 744,
+        "rel_weekday x informal": 686,
+        "rel_simple x shorthand": 612,
+        "rel_weekday x shorthand": 514,
+        "rel_simple x institutional": 362,
+        "rel_weekday x institutional": 323,
+        "month_only x informal": 301,
+        "month_only x shorthand": 238,
+        "absolute x informal": 220,
+        "absolute x shorthand": 154,
+        "month_only x institutional": 113,
+        "absolute x institutional": 83
+      },
+      "event_count|recurrence_class": {
+        "1 x none": 3064,
+        "1 x weekly_multi": 1680,
+        "1 x weekly_single": 1590,
+        "1 x daily": 562,
+        "2 x none": 542,
+        "1 x interval": 424,
+        "2 x weekly_multi": 307,
+        "1 x bounded_until": 299,
+        "2 x weekly_single": 247,
+        "1 x negated": 115,
+        "1 x bounded_count": 111,
+        "2 x daily": 87,
+        "2 x interval": 84,
+        "2 x bounded_until": 47,
+        "2 x negated": 21,
+        "2 x bounded_count": 20
+      }
+    },
+    "gaps": [
+      {
+        "kind": "pair",
+        "axis": "recurrence_class|time_spec",
+        "cell": "bounded_count x duration",
+        "count": 2,
+        "pct": 0.02
+      },
+      {
+        "kind": "pair",
+        "axis": "recurrence_class|time_spec",
+        "cell": "bounded_until x duration",
+        "count": 5,
+        "pct": 0.05
+      },
+      {
+        "kind": "pair",
+        "axis": "recurrence_class|time_spec",
+        "cell": "interval x duration",
+        "count": 6,
+        "pct": 0.06
+      },
+      {
+        "kind": "pair",
+        "axis": "recurrence_class|time_spec",
+        "cell": "daily x duration",
+        "count": 11,
+        "pct": 0.11
+      },
+      {
+        "kind": "pair",
+        "axis": "recurrence_class|time_spec",
+        "cell": "weekly_single x duration",
+        "count": 20,
+        "pct": 0.2
+      },
+      {
+        "kind": "pair",
+        "axis": "recurrence_class|time_spec",
+        "cell": "weekly_multi x duration",
+        "count": 25,
+        "pct": 0.25
+      },
+      {
+        "kind": "pair",
+        "axis": "recurrence_class|time_spec",
+        "cell": "bounded_count x ambiguous",
+        "count": 26,
+        "pct": 0.26
+      },
+      {
+        "kind": "pair",
+        "axis": "time_spec|register",
+        "cell": "duration x institutional",
+        "count": 27,
+        "pct": 0.27
+      },
+      {
+        "kind": "pair",
+        "axis": "recurrence_class|time_spec",
+        "cell": "negated x start_end",
+        "count": 31,
+        "pct": 0.31
+      },
+      {
+        "kind": "pair",
+        "axis": "recurrence_class|time_spec",
+        "cell": "negated x ambiguous",
+        "count": 37,
+        "pct": 0.37
+      },
+      {
+        "kind": "pair",
+        "axis": "time_spec|register",
+        "cell": "duration x informal",
+        "count": 43,
+        "pct": 0.43
+      },
+      {
+        "kind": "pair",
+        "axis": "recurrence_class|time_spec",
+        "cell": "bounded_count x start_only",
+        "count": 47,
+        "pct": 0.47
+      },
+      {
+        "kind": "pair",
+        "axis": "time_spec|register",
+        "cell": "duration x shorthand",
+        "count": 48,
+        "pct": 0.48
+      },
+      {
+        "kind": "pair",
+        "axis": "recurrence_class|time_spec",
+        "cell": "none x duration",
+        "count": 49,
+        "pct": 0.49
+      },
+      {
+        "kind": "pair",
+        "axis": "recurrence_class|time_spec",
+        "cell": "bounded_count x start_end",
+        "count": 49,
+        "pct": 0.49
+      }
+    ],
+    "n_empty": 0,
+    "n_thin": 15
+  },
+  "harvested_all": {
+    "label": "harvested_all",
+    "length": {
+      "n": 610,
+      "chars": {
+        "p50": 23,
+        "p90": 40,
+        "p99": 56,
+        "max": 82,
+        "mean": 24
+      },
+      "bytes": {
+        "p50": 23,
+        "p90": 40,
+        "p99": 56,
+        "max": 82,
+        "mean": 24.0
+      },
+      "byte_char_inflation": 1.0005,
+      "nonascii_chars": {
+        "U+2013 '–'": 4
+      },
+      "pct_strings_with_nonascii": 0.33
+    },
+    "casing_pct": {
+      "all_lower": 53.28,
+      "title_ish": 30.66,
+      "mixed": 14.1,
+      "none": 1.15,
+      "all_upper": 0.82
+    },
+    "probe_rates_pct": {
+      "has_daycode": 40.82,
+      "has_time": 50.82,
+      "has_explicit_meridiem": 17.7,
+      "has_time_range": 9.84,
+      "has_interval_phrase": 5.74,
+      "has_until_bound": 4.1,
+      "has_count_bound": 0.49,
+      "has_negation": 2.13,
+      "has_duration": 0.49,
+      "has_location_marker": 1.8,
+      "has_person_marker": 0.16,
+      "has_relative_date": 9.84,
+      "has_month_name": 24.59,
+      "has_month_day": 24.43,
+      "has_multi_event_separator": 15.9,
+      "ampm_ambiguous_bare_hour": 21.48
+    }
+  },
+  "harvested_target_like": {
+    "label": "harvested_target_like",
+    "length": {
+      "n": 305,
+      "chars": {
+        "p50": 22,
+        "p90": 40,
+        "p99": 54,
+        "max": 82,
+        "mean": 23.6
+      },
+      "bytes": {
+        "p50": 22,
+        "p90": 40,
+        "p99": 54,
+        "max": 82,
+        "mean": 23.6
+      },
+      "byte_char_inflation": 1.0011,
+      "nonascii_chars": {
+        "U+2013 '–'": 4
+      },
+      "pct_strings_with_nonascii": 0.66
+    },
+    "casing_pct": {
+      "title_ish": 40.66,
+      "all_lower": 35.41,
+      "mixed": 20.98,
+      "none": 1.97,
+      "all_upper": 0.98
+    },
+    "probe_rates_pct": {
+      "has_daycode": 46.23,
+      "has_time": 70.82,
+      "has_explicit_meridiem": 28.2,
+      "has_time_range": 17.05,
+      "has_interval_phrase": 1.64,
+      "has_until_bound": 2.62,
+      "has_count_bound": 0.0,
+      "has_negation": 0.33,
+      "has_duration": 0.98,
+      "has_location_marker": 3.61,
+      "has_person_marker": 0.33,
+      "has_relative_date": 11.8,
+      "has_month_name": 28.52,
+      "has_month_day": 24.59,
+      "has_multi_event_separator": 17.7,
+      "ampm_ambiguous_bare_hour": 25.9
+    }
+  },
+  "gap_vs_reality": [
+    {
+      "feature": "relative_date",
+      "harvested_pct": 11.8,
+      "synthetic_pct": 16.16,
+      "delta_pp": 4.36,
+      "verdict": "roughly aligned"
+    },
+    {
+      "feature": "multi_event",
+      "harvested_pct": 17.7,
+      "synthetic_pct": 13.55,
+      "delta_pp": -4.15,
+      "verdict": "roughly aligned"
+    },
+    {
+      "feature": "bounded_count",
+      "harvested_pct": 0.0,
+      "synthetic_pct": 1.31,
+      "delta_pp": 1.31,
+      "verdict": "roughly aligned"
+    },
+    {
+      "feature": "negated_recurrence",
+      "harvested_pct": 0.33,
+      "synthetic_pct": 1.36,
+      "delta_pp": 1.03,
+      "verdict": "roughly aligned"
+    },
+    {
+      "feature": "bounded_until",
+      "harvested_pct": 2.62,
+      "synthetic_pct": 3.46,
+      "delta_pp": 0.84,
+      "verdict": "roughly aligned"
+    },
+    {
+      "feature": "ampm_ambiguous",
+      "harvested_pct": 25.9,
+      "synthetic_pct": 25.09,
+      "delta_pp": -0.81,
+      "verdict": "roughly aligned"
+    },
+    {
+      "feature": "duration_given",
+      "harvested_pct": 0.98,
+      "synthetic_pct": 1.18,
+      "delta_pp": 0.2,
+      "verdict": "roughly aligned"
+    }
+  ],
+  "gap_vs_reality_allharvest": [
+    {
+      "feature": "relative_date",
+      "harvested_pct": 9.84,
+      "synthetic_pct": 16.16,
+      "delta_pp": 6.32,
+      "verdict": "roughly aligned"
+    },
+    {
+      "feature": "ampm_ambiguous",
+      "harvested_pct": 21.48,
+      "synthetic_pct": 25.09,
+      "delta_pp": 3.61,
+      "verdict": "roughly aligned"
+    },
+    {
+      "feature": "multi_event",
+      "harvested_pct": 15.9,
+      "synthetic_pct": 13.55,
+      "delta_pp": -2.35,
+      "verdict": "roughly aligned"
+    },
+    {
+      "feature": "bounded_count",
+      "harvested_pct": 0.49,
+      "synthetic_pct": 1.31,
+      "delta_pp": 0.82,
+      "verdict": "roughly aligned"
+    },
+    {
+      "feature": "negated_recurrence",
+      "harvested_pct": 2.13,
+      "synthetic_pct": 1.36,
+      "delta_pp": -0.77,
+      "verdict": "roughly aligned"
+    },
+    {
+      "feature": "duration_given",
+      "harvested_pct": 0.49,
+      "synthetic_pct": 1.18,
+      "delta_pp": 0.69,
+      "verdict": "roughly aligned"
+    },
+    {
+      "feature": "bounded_until",
+      "harvested_pct": 4.1,
+      "synthetic_pct": 3.46,
+      "delta_pp": -0.64,
+      "verdict": "roughly aligned"
+    }
+  ],
+  "synthetic_via_same_probes": {
+    "label": "synthetic (regex probes)",
+    "length": {
+      "n": 20000,
+      "chars": {
+        "p50": 38,
+        "p90": 57,
+        "p99": 75,
+        "max": 106,
+        "mean": 38.4
+      },
+      "bytes": {
+        "p50": 38,
+        "p90": 57,
+        "p99": 75,
+        "max": 108,
+        "mean": 38.4
+      },
+      "byte_char_inflation": 1.0003,
+      "nonascii_chars": {
+        "U+2013 '–'": 99
+      },
+      "pct_strings_with_nonascii": 0.49
+    },
+    "casing_pct": {
+      "all_lower": 28.36,
+      "title_ish": 28.36,
+      "all_upper": 23.41,
+      "mixed": 19.88
+    },
+    "probe_rates_pct": {
+      "has_daycode": 68.3,
+      "has_time": 73.48,
+      "has_explicit_meridiem": 34.06,
+      "has_time_range": 5.23,
+      "has_interval_phrase": 4.91,
+      "has_until_bound": 5.87,
+      "has_count_bound": 4.08,
+      "has_negation": 5.03,
+      "has_duration": 9.38,
+      "has_location_marker": 35.08,
+      "has_person_marker": 45.24,
+      "has_relative_date": 9.54,
+      "has_month_name": 9.43,
+      "has_month_day": 2.57,
+      "has_multi_event_separator": 23.73,
+      "ampm_ambiguous_bare_hour": 27.91
+    }
+  }
+}
