@@ -1,1 +1,58 @@
 RESEARCH.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+ENV/
+.env
+.env.*
+!.env.example
+
+# Machine learning artifacts
+checkpoints/
+models/
+outputs/
+artifacts/
+*.ckpt
+*.pt
+*.pth
+*.safetensors
+*.onnx
+*.bin
+
+# Data and experiment tracking
+data/
+*.csv
+*.jsonl
+*.parquet
+wandb/
+mlruns/
+tensorboard/
+lightning_logs/
+
+# Notebooks and IDEs
+.ipynb_checkpoints/
+.idea/
+.vscode/
+
+# Testing and tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Corpus: synthetic pools regenerate from a fixed seed (scripts/build_corpus.py)
+# and human_raw.jsonl regenerates from corpus/contrib/*.txt, so both stay ignored.
+# The harvested reference corpus does NOT regenerate -- keep it.
+!corpus/harvested.jsonl
