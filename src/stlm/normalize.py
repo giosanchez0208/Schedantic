@@ -13,8 +13,10 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
+from . import holidays as hol
 from . import lexicon as lx
 from .convert import DEFAULT_POLICY, Policy
+from .ir import FLAGS as _FLAGS
 from .ir import L1, L2, DateTimeSpec, L2Event, RRule, Span
 
 WEEKDAYS = ("MO", "TU", "WE", "TH", "FR", "SA", "SU")
@@ -147,6 +149,12 @@ _MD = re.compile(
 def normalize_date(text: str) -> tuple[str | None, set[str]]:
     t = re.sub(r"\s+", " ", text.strip().lower())
     flags: set[str] = set()
+
+    m = hol.HOLIDAY_RE.search(t)
+    if m:
+        sym, hflags = hol.lookup(m.group(1))
+        if sym or hflags:
+            return sym, hflags
 
     if re.match(r"^(the\s+)?day\s+after\s+(tomorrow|tmrw|tmr)$", t):
         return "REL:DAY_AFTER_TOMORROW", {"relative_date"}
@@ -419,6 +427,15 @@ def l1_to_l2(l1: L1, policy: Policy = DEFAULT_POLICY) -> tuple[L2, Trace]:
 
     if len(events) > 1:
         all_flags.add("multi_event")
+
+    # A named date we cannot compute (lunar holidays move by weeks between
+    # years) must not fall through to the REL:TODAY default. Scheduling Chinese
+    # New Year lunch for today is a silent catastrophic error by TARGET.md's own
+    # definition; refusing is the honest answer.
+    if "named_date_unresolvable" in all_flags:
+        known = set(_FLAGS)
+        return L2(id=l1.id, events=[], status="unresolvable",
+                  flags=sorted(f for f in all_flags if f in known)), trace
 
     known = set()
     from .ir import FLAGS as _F

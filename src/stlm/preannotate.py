@@ -17,6 +17,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from . import holidays as hol
 from . import lexicon as lx
 
 # --- surface patterns --------------------------------------------------------
@@ -181,6 +182,8 @@ def propose(text: str) -> list[Proposal]:
         _add(out, "DATE", m, "reldate", 1)
     for m in ABSDATE_RE.finditer(text):
         _add(out, "DATE", m, "absdate", 1)
+    for m in hol.HOLIDAY_RE.finditer(text):
+        _add(out, "DATE", m, "holiday", 1)
     for m in PERSON_RE.finditer(text):
         _add(out, "PERSON", m, "person", 1)
     for m in LOCATION_RE.finditer(text):
@@ -255,7 +258,10 @@ def with_summary(text: str) -> list[Proposal]:
         if m and m.end() < len(frag):
             s += m.end()
         frag = text[s:e]
-        m = re.search(rf"(?:\s|\b{EDGE})+$", frag, re.I)
+        # \b before EDGE fails on punctuation ("party @" keeps its @), so match
+        # word-connectives and symbol-connectives separately.
+        m = re.search(rf"(?:\s|\b(?:with|w/|w|and|at|on|in|of|the|a|an|for|to|re)\b|[@:,.-])+$",
+                      frag, re.I)
         if m and m.start() > 0:
             e = s + m.start()
         return s, e

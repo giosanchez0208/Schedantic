@@ -310,6 +310,54 @@ def test_known_baseline_gap():
               l2.events[0].rrule.byday == ["MO", "WE"], str(l2.events[0].rrule.byday))
 
 
+def test_holidays():
+    print("\n[named dates] holiday interpreter")
+    from stlm.holidays import easter, lookup, nth_weekday
+
+    # Known-correct Gregorian Easters, as an independent check on the computus.
+    for year, want in [(2024, dt.date(2024, 3, 31)), (2025, dt.date(2025, 4, 20)),
+                       (2026, dt.date(2026, 4, 5)), (2027, dt.date(2027, 3, 28))]:
+        check(f"easter({year}) -> {want}", easter(year) == want, str(easter(year)))
+
+    check("4th Thursday of Nov 2026 -> Nov 26",
+          nth_weekday(2026, 11, 3, 4) == dt.date(2026, 11, 26),
+          str(nth_weekday(2026, 11, 3, 4)))
+    check("last Monday of Aug 2026 -> Aug 31",
+          nth_weekday(2026, 8, 0, -1) == dt.date(2026, 8, 31),
+          str(nth_weekday(2026, 8, 0, -1)))
+
+    for name, want in [("christmas", "REL:MD_12_25"), ("xmas", "REL:MD_12_25"),
+                       ("christmas eve", "REL:MD_12_24"), ("undas", "REL:MD_11_1"),
+                       ("good friday", "REL:EASTER-2"), ("holy week", "REL:EASTER-7"),
+                       ("thanksgiving", "REL:NTH_4_3_11"), ("halloween", "REL:MD_10_31")]:
+        got, _ = lookup(name)
+        check(f"lookup {name!r} -> {want}", got == want, f"got {got}")
+
+    # Longest-match: "christmas eve" must not collapse to "christmas".
+    l2, _ = parse("christmas eve dinner")
+    check("'christmas eve' beats 'christmas'",
+          l2.events and l2.events[0].dtstart.date == "REL:MD_12_24",
+          str(l2.events[0].dtstart.date if l2.events else None))
+
+    # Good Friday 2027 = Easter (Mar 28) - 2. From Aug 2026 the next one is 2027.
+    d = resolve_date("REL:EASTER-2", REF)
+    check("REL:EASTER-2 from Aug 2026 -> 2027-03-26", d == dt.date(2027, 3, 26), str(d))
+    d = resolve_date("REL:NTH_4_3_11", REF)
+    check("REL:NTH_4_3_11 from Aug 2026 -> 2026-11-26", d == dt.date(2026, 11, 26), str(d))
+
+    # Lunar holidays move by weeks between years. Guessing one is a silent
+    # catastrophic error; refusing is correct.
+    for text in ["chinese new year lunch", "eid celebration"]:
+        l2, _ = parse(text)
+        check(f"{text!r} -> unresolvable, not a guess",
+              l2.status == "unresolvable" and not l2.events
+              and "named_date_unresolvable" in l2.flags,
+              f"status={l2.status} events={len(l2.events)} flags={l2.flags}")
+
+    l2, _ = parse("christmas dinner with family")
+    check("holiday L2 validates", not l2.validate(), str(l2.validate()))
+
+
 if __name__ == "__main__":
     test_fixtures_valid()
     test_jcal_emission()
@@ -320,6 +368,7 @@ if __name__ == "__main__":
     test_generator_integrity()
     test_normalizer()
     test_known_baseline_gap()
+    test_holidays()
     print("\n" + "=" * 60)
     if FAILURES:
         print(f"{len(FAILURES)} FAILURE(S):")

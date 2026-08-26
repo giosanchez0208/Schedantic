@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 
 from dateutil import rrule as du
 
+from . import holidays as hol
 from .ir import L2, L2Event, RRule
 
 WEEKDAY_INDEX = {"MO": 0, "TU": 1, "WE": 2, "TH": 3, "FR": 4, "SA": 5, "SU": 6}
@@ -71,6 +72,18 @@ def resolve_date(symbol: str, ref: dt.datetime, rule: RRule | None = None,
         return ref.date() + dt.timedelta(days=1)
     if symbol == "REL:DAY_AFTER_TOMORROW":
         return ref.date() + dt.timedelta(days=2)
+    if symbol.startswith("REL:EASTER"):
+        off = int(symbol[len("REL:EASTER"):])
+        d = hol.easter(ref.year) + dt.timedelta(days=off)
+        if d < ref.date():
+            d = hol.easter(ref.year + 1) + dt.timedelta(days=off)
+        return d
+    if symbol.startswith("REL:NTH_"):
+        n, wd, month = (int(x) for x in symbol[len("REL:NTH_"):].split("_"))
+        d = hol.nth_weekday(ref.year, month, wd, n)
+        if d < ref.date():
+            d = hol.nth_weekday(ref.year + 1, month, wd, n)
+        return d
     if symbol.startswith("REL:MD_"):
         m, d = (int(x) for x in symbol[len("REL:MD_"):].split("_"))
         year = ref.year if (m, d) >= (ref.month, ref.day) else ref.year + 1

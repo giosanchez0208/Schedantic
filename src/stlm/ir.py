@@ -8,6 +8,7 @@ L3 = jCal, produced in convert.py from L2 + reference time + tz.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field, asdict
 from typing import Any
 
@@ -45,6 +46,8 @@ FLAGS = (
     "duration_given",
     "recur_with_anchor",  # "every MWF starting next week" -- the OQ-6 pattern
     "time_approximate",   # time came from "morning"/"evening", not a clock
+    "named_date",         # "christmas", "good friday" -- see holidays.py
+    "named_date_unresolvable",  # lunar holiday; moves yearly, not guessed
 )
 
 WEEKDAYS = ("MO", "TU", "WE", "TH", "FR", "SA", "SU")
@@ -70,6 +73,23 @@ REL_SYMBOLS = (
     # exactly the way an absolute date would. Same reasoning as REL:MONTH_.
     *[f"REL:MD_{m}_{d}" for m in range(1, 13) for d in range(1, 32)],
 )
+
+# Computed named dates. These are patterned rather than enumerated -- Easter
+# moves every year and is the anchor for the whole of Holy Week.
+#   REL:EASTER-2      Good Friday
+#   REL:NTH_4_3_11    4th Thursday of November
+#   REL:NTH_-1_0_8    last Monday of August
+_EASTER_RE = re.compile(r"^REL:EASTER[+-]\d{1,3}$")
+_NTH_RE = re.compile(r"^REL:NTH_(-1|[1-5])_[0-6]_(1[0-2]|[1-9])$")
+
+
+def is_valid_date_symbol(sym: str) -> bool:
+    """A symbolic date is one of the enumerated ones, an ABS:, or a computed form."""
+    if sym.startswith("ABS:"):
+        return True
+    if sym in REL_SYMBOLS:
+        return True
+    return bool(_EASTER_RE.match(sym) or _NTH_RE.match(sym))
 
 
 # --- L1 ----------------------------------------------------------------------
@@ -173,8 +193,8 @@ class RRule:
         if self.until and self.count:
             errs.append("RFC 5545: UNTIL and COUNT are mutually exclusive")
         if self.until is not None:
-            if not (self.until.startswith("ABS:") or self.until in REL_SYMBOLS):
-                errs.append(f"until {self.until!r} is neither ABS: nor a known REL symbol")
+            if not is_valid_date_symbol(self.until):
+                errs.append(f"until {self.until!r} is not a known symbolic date")
         if self.count is not None and self.count < 1:
             errs.append(f"count must be >= 1, got {self.count}")
         return errs
@@ -188,8 +208,8 @@ class DateTimeSpec:
     def validate(self) -> list[str]:
         errs = []
         if self.date is not None:
-            if not (self.date.startswith("ABS:") or self.date in REL_SYMBOLS):
-                errs.append(f"date {self.date!r} is neither ABS: nor a known REL symbol")
+            if not is_valid_date_symbol(self.date):
+                errs.append(f"date {self.date!r} is not a known symbolic date")
         if self.time is not None and self.time.startswith("TOD:"):
             if self.time not in TOD_SYMBOLS:
                 errs.append(f"unknown time-of-day symbol {self.time!r}")

@@ -52,54 +52,47 @@ Next: write the 500 myself. [COVERAGE_GAPS.md](COVERAGE_GAPS.md) ranks what's mi
 
 [ 8/27/2026 ]
 
-## Phase 4: Other people's handwriting
+## Phase 4: Outsourcing Data
 
-Didn't write the 500 myself in the end. Got kylar, sarah, and bryan to fill it instead &mdash; 207 strings, three authors. Better than what I planned, because now the test set can be an entire held-out person instead of a random slice of my own writing. That's the actual Geva et al. recommendation, not an approximation of it. Bryan is test (48), sarah + kylar are dev (159). I wrote none of it, which means I'm a fourth unseen author at deployment. That's the honest setup.
+Didn't write the 500 myself in the end. I had three friends help me write entries. Better than what I planned, because now the test set can be an entire held-out person instead of a random slice of my own writing. That is the actual Geva et al. recommendation, not an approximation of it. One of them is test (48), two of them are dev (159). I wrote none of it, which means I'm a fourth unseen author at deployment.
 
-Then I found the mistake, and it was mine. **26.6% of what they wrote contains a verbatim example string from my own prompts.** I'd put `'MWF 8-10 until Dec'` and `'gym MWF x12'` in the instructions as illustrations, and people copied them. Three strings came back byte-identical across two different authors, which isn't coincidence. Cross-author duplicates are the worst kind &mdash; they fake agreement between people who were supposed to be independent.
+Also declared the accuracy target before running anything, which was the thing I said I'd do and nearly didn't. TARGET.md.
 
-Fixed forward: contributor prompts now describe the _shape_ of a construction, never a copyable string. Every affected row is flagged `prompt_anchored` so I can score with and without them.
-
-Also declared the accuracy target before running anything, which was the thing I said I'd do and nearly didn't. [TARGET.md](TARGET.md).
-
-## Phase 5: Annotation, and being wrong out loud
+## Phase 5: Annotation
 
 Wrote an annotation tool that pre-fills spans with the rule parser so I correct instead of typing. Two things went wrong immediately.
 
-First, I looked at the 40 pre-annotated items and thought "looks right." That's the exact failure the pre-annotation causes &mdash; seeing a filled-in answer makes it look correct. Real edit rate turned out to be 2 out of 40, so it mostly _was_ right, but I wasn't checking, I was agreeing. Test set is emitted blank for this reason: if gold matches the rules because gold was copied from the rules, M5 scores near-perfect and tells me nothing.
+First, I looked at the 40 pre-annotated items and thought "looks right." That's the exact failure the pre-annotation causes. Seeing a filled-in answer makes it look correct. Real edit rate turned out to be 2 out of 40, so it mostly was right, but I wasn't checking, I was agreeing. Test set is emitted blank for this reason: if gold matches the rules because gold was copied from the rules, M5 scores near-perfect and tells me nothing.
 
-Second, I hit `Biweekly staff meeting every other Tuesday` and couldn't tell which recurrence span to keep. Turned out the answer is **both**, and the instruction to delete one was wrong. If `Biweekly` is tagged when it's alone but dropped when a fuller phrase sits nearby, the model sees the same string labeled two ways and learns neither. Consistency beats elegance. Merging redundancy is the normalizer's job. Wrote [ANNOTATION_GUIDE.md](ANNOTATION_GUIDE.md) so these get decided once instead of re-argued.
+Second, I hit `Biweekly staff meeting every other Tuesday` and couldn't tell which recurrence span to keep. Turned out the answer is both, and the instruction to delete one was wrong. If `Biweekly` is tagged when it's alone but dropped when a fuller phrase sits nearby, the model sees the same string labeled two ways and learns neither. Consistency beats elegance. Merging redundancy is the normalizer's job. Wrote [ANNOTATION_GUIDE.md](ANNOTATION_GUIDE.md) so these get decided once instead of re-argued.
 
 Renamed the `UNTIL` span to `BOUND` while I was there. `x8` is a count, not a date, and the old name implied otherwise.
 
-## Phase 6: The rule baseline, and what it can't do
+## Phase 6: The Rule Baseline
 
-Built the L1 &rarr; L2 normalizer, which was the missing link. Pipeline now runs end to end: text &rarr; spans &rarr; structured event &rarr; jCal. 6/7 on the hand-written fixtures.
+Built the L1 → L2 normalizer, which was the missing link. Pipeline now runs end to end: text → spans → structured event → jCal. 6/7 on the hand-written fixtures.
 
-The one failure is `Monday 12pm, Wednesday 5pm Laboratory` &mdash; rules flatten it to one event and Wednesday silently becomes noon. That's the RFC 5545 cross-product trap showing up as a real miss, and it's a _silent catastrophic_ error by my own definition: wrong time, no warning. Wrote it in as a test that asserts the broken behavior so it fails loudly the day segmentation lands.
+The one failure is `Monday 12pm, Wednesday 5pm Laboratory`. Rules flatten it to one event and Wednesday silently becomes noon. That's the RFC 5545 cross-product trap showing up as a real miss, and it's a silent catastrophic error by my own definition: wrong time, no warning. Wrote it in as a test that asserts the broken behavior so it fails loudly the day segmentation lands.
 
 Then the finding that reframed everything. Ran the rules over 25 strings that shouldn't be schedulable at all:
 
 **25 out of 25 got scheduled.** `nvm` becomes an event today. `Sat down for coffee` becomes a weekly Saturday. `Fri is short for Frida` becomes a weekly Friday.
 
-Rules fail at this structurally, not by accident. A pattern that matches `Sat` has no access to whether the sentence is _about_ scheduling. That needs sentence-level context, which is what a model has and a lookup table can't. Every existing tool has the same hole &mdash; chrono, Duckling, ML Kit will all happily pull March out of "March was fun." This is the strongest argument for the model existing that I've found.
+Rules fail at this structurally, not by accident. A pattern that matches `Sat` has no access to whether the sentence is about scheduling. That needs sentence-level context, which is what a model has and a lookup table can't. Every existing tool has the same hole. chrono, Duckling, ML Kit will all happily pull March out of "March was fun." This is the strongest argument for the model existing that I've found.
 
-## Phase 7: Three questions
+### Phase 7: Three questions
 
 Which is where it got simple. The whole product is:
 
-1. **Is it a schedule?**
-2. **What goes on the calendar?**
-3. **When?**
+1. Is it a schedule?
+2. What goes on the calendar?
+3. When?
 
-That's it. Stupidly simple, even if the work to get there is intricate. Restructured [TARGET.md](TARGET.md) into three groups of thresholds, one per question, each cleared independently. Worth noting question 1 had _no threshold at all_ before this &mdash; the worst number in the project was sitting outside the gate.
+That's it. Stupidly simple, even if the work to get there is intricate. Restructured [TARGET.md](target.md) into three groups of thresholds, one per question, each cleared independently. Worth noting question 1 had no threshold at all before this. The worst number in the project was sitting outside the gate.
 
 The framing immediately started deciding things:
 
-- **Killed the DESCRIPTION slot.** `please arrive early` isn't an answer to any of the three questions. Untagged, dropped, done.
-- **Built the time-of-day interpreter.** `morning`, `tmrw afternoon`, `at dawn` are answers to question 3. Measured 3.3% of real strings where it's load-bearing (no clock time present), 7.0% where it's redundant. Symbolic `TOD:MORNING` at L2, policy collapses it to 08:00 at L3, same as dates. Flagged `time_approximate` so the UI can say "~8am" instead of faking precision.
-- **Refused to build the holiday table.** I wanted one &mdash; christmas, halloween, new year. Measured it: **0 instances in 512 real strings.** And my register is Philippine, so a US table would be wrong on top of being unjustified. Not building it until gold says otherwise.
+- Killed the DESCRIPTION slot. `please arrive early` isn't an answer to any of the three questions. Untagged, dropped, done.
+- Built the time-of-day interpreter. `morning`, `tmrw afternoon`, `at dawn` are answers to question 3. Measured 3.3% of real strings where it's load-bearing (no clock time present), 7.0% where it's redundant. Symbolic TOD:MORNING at L2, policy collapses it to 08:00 at L3, same as dates. Flagged time_approximate so the UI can say "~8am" instead of faking precision.
 
-TLDR: every simplification this week came from measuring, not from thinking harder. The IR has picked up four open questions since it was written, and all four came from implementing or annotating &mdash; none from imagination. Writing the spec first was still right; believing it was never the point.
-
-Next: finish annotating, get a real number on the three questions, then M6 decides whether the model gets built. Though after 25/25 I think I already know.
+TLDR: every simplification this week came from measuring, not from thinking harder. The IR has picked up four open questions since it was written, and all four came from implementing or annotating. None from imagination. Writing the spec first was still right, but doubting it was always an option.
