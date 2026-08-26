@@ -19,7 +19,9 @@ SPAN_TYPES = (
     "TSTART",
     "TEND",
     "DATE",
-    "UNTIL",
+    "BOUND",   # end of the series: a date ("until Dec") OR a count ("x8").
+               # One span type on purpose -- L1 records WHERE, the normalizer
+               # decides which kind and fills rrule.until or rrule.count.
     "PERSON",
     "LOCATION",
     "DURATION",  # provisional; gated on OQ-8

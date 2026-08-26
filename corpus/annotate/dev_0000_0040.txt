@@ -4,8 +4,15 @@
 # Delete a line to remove that span. Add a line to add one. Edit the text
 # to fix a boundary. Copy the value EXACTLY as it appears, including case.
 #
-# TYPES: SUMMARY RECUR TSTART TEND DATE UNTIL PERSON LOCATION DURATION
+# TYPES: SUMMARY RECUR TSTART TEND DATE BOUND PERSON LOCATION DURATION
 # SUMMARY is the residual -- whatever is not temporal. Spans must NOT overlap.
+#
+# RULES: documentation/ANNOTATION_GUIDE.md -- read it once before starting.
+# The short version: tag EVERY temporal expression. Do not delete one
+# because another says the same thing. Redundancy is the normalizer's
+# problem, not yours.
+#
+# Read the > line and decide the spans BEFORE looking at the proposal.
 #
 # If the same text appears twice in the line, disambiguate with an
 # occurrence number:   TSTART | 8 #2      (the second '8')
@@ -23,7 +30,6 @@
 > THURS LUNCH W ATE BEA
 RECUR    | THURS
 SUMMARY  | LUNCH
-RECUR    | W
 PERSON   | ATE BEA
 events: all
 status: ok
@@ -94,7 +100,6 @@ note:
 RECUR    | TTH
 TSTART   | 7PM
 SUMMARY  | ZUMBA
-RECUR    | W
 PERSON   | MOM
 events: all
 status: ok
@@ -154,7 +159,7 @@ note:
 > Therapy every Tue for 8 weeks
 SUMMARY  | Therapy
 RECUR    | every Tue
-UNTIL    | for 8 weeks
+BOUND    | for 8 weeks
 events: all
 status: ok
 flags:
@@ -192,7 +197,7 @@ note:
 === h1a35d85e55 [sarah] ===
 > Yoga 6 sessions
 SUMMARY  | Yoga
-UNTIL    | 6 sessions
+BOUND    | 6 sessions
 events: all
 status: ok
 flags:
@@ -396,8 +401,9 @@ note:
 === h3a616582cb [sarah] ===
 > Every day except Sunday 6am mass at the chapel
 RECUR    | Every day
-RECUR    | except Sunday 6am mass
-SUMMARY  | chapel
+RECUR    | except Sunday
+TSTART   | 6am
+SUMMARY  | mass at the chapel
 events: all
 status: ok
 flags:
@@ -419,7 +425,7 @@ note:
 RECUR    | every tue
 TSTART   | 4
 SUMMARY  | therapy
-UNTIL    | x8
+BOUND    | x8
 events: all
 status: ok
 flags:

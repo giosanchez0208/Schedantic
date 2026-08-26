@@ -211,7 +211,7 @@ def apply_casing(rng: random.Random, s: str, mode: str) -> str:
 # than free-text spans -- the model still sees noise there, just not enough to
 # swamp the signal on the slots that actually matter.
 _TYPO_SCALE = {
-    "TSTART": 0.35, "TEND": 0.35, "RECUR": 0.4, "DATE": 0.5, "UNTIL": 0.5,
+    "TSTART": 0.35, "TEND": 0.35, "RECUR": 0.4, "DATE": 0.5, "BOUND": 0.5,
     "DURATION": 0.5, "SUMMARY": 1.0, "PERSON": 1.0, "LOCATION": 1.0, None: 0.2,
 }
 
@@ -572,10 +572,10 @@ def generate_one(rng: random.Random, idx: int, cell: dict | None = None,
                 temporal.append(Chunk(f"for {val} {unit}", "DURATION", [0]))
         if rr is not None and rr.until:
             temporal.append(Chunk(" ", None))
-            temporal.append(Chunk(_render_until(rng, rr.until), "UNTIL", [0]))
+            temporal.append(Chunk(_render_until(rng, rr.until), "BOUND", [0]))
         if rr is not None and rr.count:
             temporal.append(Chunk(" ", None))
-            temporal.append(Chunk(_render_count(rng, rr.count), "UNTIL", [0]))
+            temporal.append(Chunk(_render_count(rng, rr.count), "BOUND", [0]))
 
     all_ev = list(range(n_events))
     content: list[Chunk] = [Chunk(summary, "SUMMARY", all_ev)]

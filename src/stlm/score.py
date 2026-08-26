@@ -19,7 +19,7 @@ from collections import defaultdict
 from .convert import DEFAULT_POLICY, Policy, occurrence_set
 from .ir import L1, L2
 
-TEMPORAL_SLOTS = ("RECUR", "TSTART", "TEND", "DATE", "UNTIL", "DURATION")
+TEMPORAL_SLOTS = ("RECUR", "TSTART", "TEND", "DATE", "BOUND", "DURATION")
 
 
 def _span_keys(l1: L1) -> set:

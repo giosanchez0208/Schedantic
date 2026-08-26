@@ -38,7 +38,7 @@ def _plausible_daycode(text: str, m: re.Match) -> bool:
     if len(tok) > 1 or tok.lower() not in AMBIGUOUS_SINGLE:
         return True
     after = text[m.end(1):]
-    return not re.match(r"\s+[a-z]{2,}", after)
+    return not re.match(r"\s+[A-Za-z]{2,}", after)
 
 
 EVERY_RE = re.compile(
@@ -117,7 +117,7 @@ LOCATION_RE = re.compile(
 
 NEGATION_RE = re.compile(
     r"\b((?:except|exc|excluding|but\s+not|minus|xcpt)\s*"
-    r"(?:on\s+)?[\w\s]{0,24}?(?=\s*$|\s+\b(?:at|in|with|w/|room|rm)\b))",
+    r"(?:on\s+)?[A-Za-z\s]{0,20}?(?=\s*$|\s*\d|\s+\b(?:at|in|with|w/|room|rm|and)\b))",
     re.I,
 )
 
@@ -133,7 +133,7 @@ class Proposal:
 
 # Priority when two proposals overlap. Higher wins.
 PRIORITY = {
-    "UNTIL": 90, "DURATION": 85, "DATE": 82, "RECUR": 80,
+    "BOUND": 90, "DURATION": 85, "DATE": 82, "RECUR": 80,
     "TEND": 70, "TSTART": 70, "PERSON": 60, "LOCATION": 55,
 }
 
@@ -156,7 +156,7 @@ def propose(text: str) -> list[Proposal]:
     out: list[Proposal] = []
 
     for m in UNTIL_RE.finditer(text):
-        _add(out, "UNTIL", m, "until", 1)
+        _add(out, "BOUND", m, "until", 1)
     for m in DURATION_RE.finditer(text):
         _add(out, "DURATION", m, "duration", 1)
     for m in NEGATION_RE.finditer(text):
