@@ -1,0 +1,272 @@
+# STLM corpus batch 01
+# author: me
+# device: keyboard
+#
+# HOW TO USE
+#   Write one string per line under each '##' heading.
+#   Blank lines are ignored. Lines starting with # are ignored.
+#   Write what you would ACTUALLY type. Typos stay. Don't clean it up.
+#   Can't think of one? Leave it blank and move on. Blank is fine.
+#   Weird/unsure? Write it anyway and put ?? at the end of the line.
+#
+# IF SOMEONE ELSE TYPES SOME: add a line like
+#   # author: p1
+#   # device: phone
+# and everything after it is credited to them. This is what lets us keep
+# a test set written by someone other than you. One line, do not skip it.
+#
+# DO NOT read documentation/IR_SPEC_v0.md before writing. Knowing what the
+# schema supports changes what you write, and then the corpus stops being
+# evidence.
+
+## [001] DURATION instead of end time (for 2 hrs)   <P0, currently 1.0%>
+#     style: phone shorthand | all lowercase | time/day FIRST, title after | long (50+ chars)
+#     want:  'gym at 6 for 90 mins', '2 hours from 8', 'standup 9am 15min'.
+
+
+## [002] Named attendee (with Sir Jefferson)   <P0, currently 0.3%>
+#     style: institutional | MIXED cAsInG | time/day FIRST, title after | long (50+ chars)
+#     want:  'CCC100 with Sir Jefferson', 'sync w/ boss', '1on1 with Ate Bea', 'dentist w/ Dr Cruz'.
+
+
+## [003] Explicit meridiem (8am, 5PM, 12NN)   <P3, currently 28.2%>
+#     style: phone shorthand | ALL CAPS | time split around the title | long (50+ chars)
+#     want:  am/pm/NN/MN forms including 12NN, 12nn, noon, 12mn.
+
+
+## [004] Negated recurrence (except Friday)   <P0, currently 0.3%>
+#     style: informal | MIXED cAsInG | title FIRST, time/day after | long (50+ chars)
+#     want:  'daily except Sun', 'MWF except holidays', 'every day but not Friday'.
+
+
+## [005] UNTIL bound (until December, till finals)   <P1, currently 2.6%>
+#     style: phone shorthand | ALL CAPS | time split around the title | very short (under 20 chars)
+#     want:  'MWF 8-10 until Dec', 'TTh 5pm till finals week', 'daily thru March'.
+
+
+## [006] Interval recurrence (every other, biweekly)   <P1, currently 1.6%>
+#     style: phone shorthand | Normal Caps | time split around the title | medium
+#     want:  'every other Tue', 'biweekly standup', 'every 2 weeks', 'alt Fridays'.
+
+
+## [007] Absolute date-of-month (Sept 3, the 15th)   <P3, currently 24.6%>
+#     style: phone shorthand | Normal Caps | title FIRST, time/day after | long (50+ chars)
+#     want:  'Sept 3 2pm defense', 'exam on the 15th', 'Oct 21-23 conference'.
+
+
+## [008] Negated recurrence (except Friday)   <P0, currently 0.3%>
+#     style: institutional | MIXED cAsInG | time/day FIRST, title after | medium
+#     want:  'daily except Sun', 'MWF except holidays', 'every day but not Friday'.
+
+
+## [009] Bare hour, no am/pm ('MW 8')   <P3, currently 36.7%>
+#     style: institutional | all lowercase | time/day FIRST, title after | long (50+ chars)
+#     want:  Times with no meridiem at all, across morning and afternoon readings.
+
+
+## [010] DURATION instead of end time (for 2 hrs)   <P0, currently 1.0%>
+#     style: phone shorthand | MIXED cAsInG | title FIRST, time/day after | long (50+ chars)
+#     want:  'gym at 6 for 90 mins', '2 hours from 8', 'standup 9am 15min'.
+
+
+## [011] Named attendee (with Sir Jefferson)   <P0, currently 0.3%>
+#     style: informal | ALL CAPS | time/day FIRST, title after | medium
+#     want:  'CCC100 with Sir Jefferson', 'sync w/ boss', '1on1 with Ate Bea', 'dentist w/ Dr Cruz'.
+
+
+## [012] Relative dates (tmrw, this Mon)   <P2, currently 11.8%>
+#     style: institutional | ALL CAPS | time split around the title | very short (under 20 chars)
+#     want:  'tmrw', 'tom', 'day after tmrw', 'this Mon', 'nxt tuesday', '2moro'.
+
+
+## [013] Relative dates (tmrw, this Mon)   <P2, currently 11.8%>
+#     style: informal | Normal Caps | time/day FIRST, title after | very short (under 20 chars)
+#     want:  'tmrw', 'tom', 'day after tmrw', 'this Mon', 'nxt tuesday', '2moro'.
+
+
+## [014] Interval recurrence (every other, biweekly)   <P1, currently 1.6%>
+#     style: institutional | Normal Caps | title FIRST, time/day after | long (50+ chars)
+#     want:  'every other Tue', 'biweekly standup', 'every 2 weeks', 'alt Fridays'.
+
+
+## [015] Multiple events in one string   <P3, currently 17.7%>
+#     style: phone shorthand | MIXED cAsInG | title FIRST, time/day after | medium
+#     want:  'Mon 12pm, Wed 5pm Lab', 'MWF 8-10 and TTh 1-3', 'lecture MW 9, lab F 2'.
+
+
+## [016] Named attendee (with Sir Jefferson)   <P0, currently 0.3%>
+#     style: institutional | all lowercase | title FIRST, time/day after | long (50+ chars)
+#     want:  'CCC100 with Sir Jefferson', 'sync w/ boss', '1on1 with Ate Bea', 'dentist w/ Dr Cruz'.
+
+
+## [017] Explicit time RANGES (8-12, 9:30 to 11)   <P3, currently 17.0%>
+#     style: institutional | Normal Caps | time split around the title | long (50+ chars)
+#     want:  Ranges with varied separators: '8-12', '8 - 12', '8 to 12', '8till12', '0800-1200'.
+
+
+## [018] Weekday day-codes (MWF, TTh, TR)   <P3, currently 46.2%>
+#     style: informal | ALL CAPS | time/day FIRST, title after | medium
+#     want:  Schedules using MWF / TTh / MW / TR / MTWThF, in every casing you'd actually type.
+
+
+## [019] COUNT bound (for 10 weeks, x8)   <P0, currently 0.0%>
+#     style: phone shorthand | Normal Caps | time split around the title | medium
+#     want:  'therapy every Tue for 8 weeks', 'gym MWF x12', '6 sessions starting Mon'.
+
+
+## [020] Location (Rm 201, @ gym, online)   <P1, currently 3.6%>
+#     style: phone shorthand | MIXED cAsInG | title FIRST, time/day after | medium
+#     want:  'MWF 8-10 Rm 201', 'lab @ CS Bldg', 'standup on Zoom', 'PE at Court 2'.
+
+
+## [021] Relative dates (tmrw, this Mon)   <P2, currently 11.8%>
+#     style: informal | MIXED cAsInG | title FIRST, time/day after | long (50+ chars)
+#     want:  'tmrw', 'tom', 'day after tmrw', 'this Mon', 'nxt tuesday', '2moro'.
+
+
+## [022] Interval recurrence (every other, biweekly)   <P1, currently 1.6%>
+#     style: informal | Normal Caps | time split around the title | very short (under 20 chars)
+#     want:  'every other Tue', 'biweekly standup', 'every 2 weeks', 'alt Fridays'.
+
+
+## [023] Absolute date-of-month (Sept 3, the 15th)   <P3, currently 24.6%>
+#     style: institutional | Normal Caps | time/day FIRST, title after | long (50+ chars)
+#     want:  'Sept 3 2pm defense', 'exam on the 15th', 'Oct 21-23 conference'.
+
+
+## [024] Relative dates (tmrw, this Mon)   <P2, currently 11.8%>
+#     style: phone shorthand | all lowercase | time split around the title | very short (under 20 chars)
+#     want:  'tmrw', 'tom', 'day after tmrw', 'this Mon', 'nxt tuesday', '2moro'.
+
+
+## [025] Relative dates (tmrw, this Mon)   <P2, currently 11.8%>
+#     style: informal | all lowercase | title FIRST, time/day after | very short (under 20 chars)
+#     want:  'tmrw', 'tom', 'day after tmrw', 'this Mon', 'nxt tuesday', '2moro'.
+
+
+## [026] DURATION instead of end time (for 2 hrs)   <P0, currently 1.0%>
+#     style: phone shorthand | Normal Caps | title FIRST, time/day after | very short (under 20 chars)
+#     want:  'gym at 6 for 90 mins', '2 hours from 8', 'standup 9am 15min'.
+
+
+## [027] Named attendee (with Sir Jefferson)   <P0, currently 0.3%>
+#     style: institutional | Normal Caps | title FIRST, time/day after | medium
+#     want:  'CCC100 with Sir Jefferson', 'sync w/ boss', '1on1 with Ate Bea', 'dentist w/ Dr Cruz'.
+
+
+## [028] DURATION instead of end time (for 2 hrs)   <P0, currently 1.0%>
+#     style: informal | Normal Caps | time/day FIRST, title after | medium
+#     want:  'gym at 6 for 90 mins', '2 hours from 8', 'standup 9am 15min'.
+
+
+## [029] Explicit time RANGES (8-12, 9:30 to 11)   <P3, currently 17.0%>
+#     style: institutional | Normal Caps | time split around the title | medium
+#     want:  Ranges with varied separators: '8-12', '8 - 12', '8 to 12', '8till12', '0800-1200'.
+
+
+## [030] Location (Rm 201, @ gym, online)   <P1, currently 3.6%>
+#     style: institutional | MIXED cAsInG | title FIRST, time/day after | long (50+ chars)
+#     want:  'MWF 8-10 Rm 201', 'lab @ CS Bldg', 'standup on Zoom', 'PE at Court 2'.
+
+
+## [031] Interval recurrence (every other, biweekly)   <P1, currently 1.6%>
+#     style: phone shorthand | ALL CAPS | title FIRST, time/day after | very short (under 20 chars)
+#     want:  'every other Tue', 'biweekly standup', 'every 2 weeks', 'alt Fridays'.
+
+
+## [032] Negated recurrence (except Friday)   <P0, currently 0.3%>
+#     style: informal | MIXED cAsInG | title FIRST, time/day after | medium
+#     want:  'daily except Sun', 'MWF except holidays', 'every day but not Friday'.
+
+
+## [033] Multiple events in one string   <P3, currently 17.7%>
+#     style: phone shorthand | Normal Caps | title FIRST, time/day after | very short (under 20 chars)
+#     want:  'Mon 12pm, Wed 5pm Lab', 'MWF 8-10 and TTh 1-3', 'lecture MW 9, lab F 2'.
+
+
+## [034] COUNT bound (for 10 weeks, x8)   <P0, currently 0.0%>
+#     style: phone shorthand | Normal Caps | time split around the title | medium
+#     want:  'therapy every Tue for 8 weeks', 'gym MWF x12', '6 sessions starting Mon'.
+
+
+## [035] UNTIL bound (until December, till finals)   <P1, currently 2.6%>
+#     style: informal | Normal Caps | time/day FIRST, title after | medium
+#     want:  'MWF 8-10 until Dec', 'TTh 5pm till finals week', 'daily thru March'.
+
+
+## [036] Bare hour, no am/pm ('MW 8')   <P3, currently 36.7%>
+#     style: informal | all lowercase | time split around the title | very short (under 20 chars)
+#     want:  Times with no meridiem at all, across morning and afternoon readings.
+
+
+## [037] Negated recurrence (except Friday)   <P0, currently 0.3%>
+#     style: phone shorthand | ALL CAPS | time split around the title | very short (under 20 chars)
+#     want:  'daily except Sun', 'MWF except holidays', 'every day but not Friday'.
+
+
+## [038] Weekday day-codes (MWF, TTh, TR)   <P3, currently 46.2%>
+#     style: institutional | ALL CAPS | time/day FIRST, title after | long (50+ chars)
+#     want:  Schedules using MWF / TTh / MW / TR / MTWThF, in every casing you'd actually type.
+
+
+## [039] DURATION instead of end time (for 2 hrs)   <P0, currently 1.0%>
+#     style: institutional | all lowercase | title FIRST, time/day after | long (50+ chars)
+#     want:  'gym at 6 for 90 mins', '2 hours from 8', 'standup 9am 15min'.
+
+
+## [040] Negated recurrence (except Friday)   <P0, currently 0.3%>
+#     style: institutional | MIXED cAsInG | time split around the title | long (50+ chars)
+#     want:  'daily except Sun', 'MWF except holidays', 'every day but not Friday'.
+
+
+## [041] UNTIL bound (until December, till finals)   <P1, currently 2.6%>
+#     style: phone shorthand | all lowercase | time split around the title | medium
+#     want:  'MWF 8-10 until Dec', 'TTh 5pm till finals week', 'daily thru March'.
+
+
+## [042] Explicit meridiem (8am, 5PM, 12NN)   <P3, currently 28.2%>
+#     style: informal | Normal Caps | time/day FIRST, title after | medium
+#     want:  am/pm/NN/MN forms including 12NN, 12nn, noon, 12mn.
+
+
+## [043] UNTIL bound (until December, till finals)   <P1, currently 2.6%>
+#     style: informal | all lowercase | title FIRST, time/day after | medium
+#     want:  'MWF 8-10 until Dec', 'TTh 5pm till finals week', 'daily thru March'.
+
+
+## [044] Location (Rm 201, @ gym, online)   <P1, currently 3.6%>
+#     style: institutional | Normal Caps | title FIRST, time/day after | long (50+ chars)
+#     want:  'MWF 8-10 Rm 201', 'lab @ CS Bldg', 'standup on Zoom', 'PE at Court 2'.
+
+
+## [045] Location (Rm 201, @ gym, online)   <P1, currently 3.6%>
+#     style: phone shorthand | Normal Caps | time/day FIRST, title after | long (50+ chars)
+#     want:  'MWF 8-10 Rm 201', 'lab @ CS Bldg', 'standup on Zoom', 'PE at Court 2'.
+
+
+## [046] Named attendee (with Sir Jefferson)   <P0, currently 0.3%>
+#     style: informal | Normal Caps | time split around the title | medium
+#     want:  'CCC100 with Sir Jefferson', 'sync w/ boss', '1on1 with Ate Bea', 'dentist w/ Dr Cruz'.
+
+
+## [047] COUNT bound (for 10 weeks, x8)   <P0, currently 0.0%>
+#     style: informal | all lowercase | title FIRST, time/day after | very short (under 20 chars)
+#     want:  'therapy every Tue for 8 weeks', 'gym MWF x12', '6 sessions starting Mon'.
+
+
+## [048] COUNT bound (for 10 weeks, x8)   <P0, currently 0.0%>
+#     style: phone shorthand | all lowercase | time/day FIRST, title after | long (50+ chars)
+#     want:  'therapy every Tue for 8 weeks', 'gym MWF x12', '6 sessions starting Mon'.
+
+
+## [049] Relative dates (tmrw, this Mon)   <P2, currently 11.8%>
+#     style: institutional | ALL CAPS | time split around the title | very short (under 20 chars)
+#     want:  'tmrw', 'tom', 'day after tmrw', 'this Mon', 'nxt tuesday', '2moro'.
+
+
+## [050] COUNT bound (for 10 weeks, x8)   <P0, currently 0.0%>
+#     style: phone shorthand | all lowercase | time split around the title | medium
+#     want:  'therapy every Tue for 8 weeks', 'gym MWF x12', '6 sessions starting Mon'.
+
+
+# end of batch
