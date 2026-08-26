@@ -70,7 +70,7 @@ Tracked in [IR_SPEC_v0.md](IR_SPEC_v0.md), answered in [FINDINGS.md](FINDINGS.md
 |---|---|
 | Answered with evidence | OQ-1, OQ-4, OQ-5, OQ-8, OQ-9, OQ-12 |
 | Answered, weak evidence | OQ-3, OQ-7 |
-| Open | OQ-2, OQ-6, OQ-10, OQ-11, OQ-13 |
+| Open | OQ-2, OQ-6, OQ-10, OQ-11, OQ-13, OQ-14 |
 
 ---
 
