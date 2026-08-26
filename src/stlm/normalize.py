@@ -41,12 +41,24 @@ _MIDNIGHT = re.compile(r"^(12\s*mn|mn|midnight)$", re.I)
 _HHMM = re.compile(r"^(\d{1,2}):(\d{2})")
 _MILITARY = re.compile(r"^([01]\d|2[0-3])([0-5]\d)\s*h?$", re.I)
 _BARE = re.compile(r"^(\d{1,2})\s*h?$", re.I)
+_TOD = {
+    "dawn": "TOD:DAWN", "morning": "TOD:MORNING", "midday": "TOD:NOON",
+    "afternoon": "TOD:AFTERNOON", "evening": "TOD:EVENING",
+    "tonight": "TOD:NIGHT", "night": "TOD:NIGHT", "dusk": "TOD:EVENING",
+}
+_TOD_RE = re.compile(r"\b(dawn|morning|midday|afternoon|evening|tonight|night|dusk)\b", re.I)
 
 
 def normalize_time(text: str, policy: Policy = DEFAULT_POLICY) -> tuple[str | None, set[str]]:
     """Surface time -> 'HH:MM'. Returns (value, flags)."""
     t = text.strip().lower().replace(".", "")
     flags: set[str] = set()
+
+    # A time-of-day word resolves to a symbol, not a clock time -- the collapse
+    # happens at L3 under policy. Flagged approximate so the UI can say "~8am".
+    m = _TOD_RE.search(t)
+    if m and not re.search(r"\d", t):
+        return _TOD[m.group(1).lower()], {"time_approximate"}
 
     if _NOON.match(t):
         return "12:00", flags

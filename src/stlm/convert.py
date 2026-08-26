@@ -11,7 +11,7 @@ symbolic.
 from __future__ import annotations
 
 import datetime as dt
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from dateutil import rrule as du
 
@@ -46,6 +46,13 @@ class Policy:
     all_day_time: dt.time = dt.time(0, 0)
     # Event with a start but no end.
     default_duration_minutes: int = 60
+    # Where each time-of-day word lands. These are the midpoint-ish hours people
+    # actually mean, not the middle of the literal range. Change here, not in gold.
+    tod_times: dict = field(default_factory=lambda: {
+        "TOD:DAWN": dt.time(6, 0), "TOD:MORNING": dt.time(8, 0),
+        "TOD:NOON": dt.time(12, 0), "TOD:AFTERNOON": dt.time(14, 0),
+        "TOD:EVENING": dt.time(18, 0), "TOD:NIGHT": dt.time(20, 0),
+    })
 
 
 DEFAULT_POLICY = Policy()
@@ -141,7 +148,10 @@ def build_rrule(rule: RRule, dtstart: dt.datetime, policy: Policy = DEFAULT_POLI
 def resolve_event(ev: L2Event, ref: dt.datetime, policy: Policy = DEFAULT_POLICY) -> dict:
     """Resolve one L2 event to concrete datetimes."""
     d = resolve_date(ev.dtstart.date, ref, ev.rrule, policy)
-    if ev.dtstart.time:
+    if ev.dtstart.time and ev.dtstart.time.startswith("TOD:"):
+        start = dt.datetime.combine(d, policy.tod_times[ev.dtstart.time])
+        all_day = False
+    elif ev.dtstart.time:
         h, m = (int(x) for x in ev.dtstart.time.split(":"))
         start = dt.datetime.combine(d, dt.time(h, m))
         all_day = False
@@ -150,7 +160,11 @@ def resolve_event(ev: L2Event, ref: dt.datetime, policy: Policy = DEFAULT_POLICY
         all_day = True
 
     end = None
-    if ev.dtend and ev.dtend.time:
+    if ev.dtend and ev.dtend.time and ev.dtend.time.startswith("TOD:"):
+        end = dt.datetime.combine(d, policy.tod_times[ev.dtend.time])
+        if end <= start:
+            end += dt.timedelta(days=1)
+    elif ev.dtend and ev.dtend.time:
         h, m = (int(x) for x in ev.dtend.time.split(":"))
         end = dt.datetime.combine(d, dt.time(h, m))
         if end <= start:

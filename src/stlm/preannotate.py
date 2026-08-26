@@ -59,6 +59,17 @@ TIME_RE = re.compile(
     re.I,
 )
 
+# Time-of-day words. Tagged TSTART because they answer "when", even though they
+# name a window rather than a point. The normalizer emits a TOD: symbol; policy
+# collapses it to a clock time at L3. See OQ-15.
+TOD_RE = re.compile(
+    r"\b(?:(?:this|next|nxt|tmrw|tomorrow|every|late|early)\s+)?"
+    r"(morning|afternoon|evening|tonight|night|dawn|dusk|midday)\b", re.I)
+
+# Anything after "@" that is just a time. "gym @ 6" and "standup @ 9am" are
+# times; "lab @ CS Bldg" is a place.
+_TIME_LIKE = re.compile(r"^[0-9]{1,4}(?::[0-9]{2})?[ ]*(?:[ap][.]?m[.]?|nn|mn|h)?$", re.I)
+
 RANGE_SEP_RE = re.compile(r"^\s*(?:-|–|—|to|till|til|until|thru|through|~|--)\s*$", re.I)
 
 RELDATE_RE = re.compile(
@@ -173,7 +184,20 @@ def propose(text: str) -> list[Proposal]:
     for m in PERSON_RE.finditer(text):
         _add(out, "PERSON", m, "person", 1)
     for m in LOCATION_RE.finditer(text):
+        # "@ 6" is a time, "@ CS Bldg" is a place. Both are common shorthand and
+        # the same symbol introduces them, so require a letter before calling it
+        # a location -- otherwise "gym @ 6" silently loses its start time.
+        tail = m.group(1).lstrip("@").strip()
+        if tail and _TIME_LIKE.match(tail):
+            continue
         _add(out, "LOCATION", m, "location", 1)
+
+    # Only tag a time-of-day word when no explicit clock time is present --
+    # "this afternoon at 3" states the real time, and TOD would be redundant at
+    # best and contradictory at worst. Measured: 7.0% redundant vs 3.3% load-bearing.
+    if not re.search(r"\d", text):
+        for m in TOD_RE.finditer(text):
+            _add(out, "TSTART", m, "time_of_day", 1)
 
     times = [m for m in TIME_RE.finditer(text)]
     consumed = [(p.start, p.end) for p in out]

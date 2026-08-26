@@ -44,9 +44,16 @@ FLAGS = (
     "all_day",
     "duration_given",
     "recur_with_anchor",  # "every MWF starting next week" -- the OQ-6 pattern
+    "time_approximate",   # time came from "morning"/"evening", not a clock
 )
 
 WEEKDAYS = ("MO", "TU", "WE", "TH", "FR", "SA", "SU")
+
+# Time-of-day words name a RANGE, not a point ("morning" is roughly 06:00-11:00).
+# Kept symbolic for the same reason dates are: the collapse to a clock time is a
+# policy decision, and policy must be changeable without re-annotating. See OQ-15.
+TOD_SYMBOLS = ("TOD:DAWN", "TOD:MORNING", "TOD:NOON", "TOD:AFTERNOON",
+               "TOD:EVENING", "TOD:NIGHT")
 
 # Symbolic date prefixes. L2 NEVER stores a resolved datetime -- see spec 1.
 REL_SYMBOLS = (
@@ -183,7 +190,10 @@ class DateTimeSpec:
         if self.date is not None:
             if not (self.date.startswith("ABS:") or self.date in REL_SYMBOLS):
                 errs.append(f"date {self.date!r} is neither ABS: nor a known REL symbol")
-        if self.time is not None:
+        if self.time is not None and self.time.startswith("TOD:"):
+            if self.time not in TOD_SYMBOLS:
+                errs.append(f"unknown time-of-day symbol {self.time!r}")
+        elif self.time is not None:
             try:
                 h, m = self.time.split(":")
                 if not (0 <= int(h) <= 23 and 0 <= int(m) <= 59):
