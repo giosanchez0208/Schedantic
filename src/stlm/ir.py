@@ -59,6 +59,9 @@ REL_SYMBOLS = (
     # "until December" = the NEXT December, not December of the annotation year.
     # Keeping month bounds symbolic is what stops gold from expiring. See OQ-7.
     *[f"REL:MONTH_{m}" for m in range(1, 13)],
+    # "Sept 3" = the NEXT Sept 3. Pinning a year here would make gold expire
+    # exactly the way an absolute date would. Same reasoning as REL:MONTH_.
+    *[f"REL:MD_{m}_{d}" for m in range(1, 13) for d in range(1, 32)],
 )
 
 

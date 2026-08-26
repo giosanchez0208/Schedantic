@@ -64,6 +64,17 @@ def resolve_date(symbol: str, ref: dt.datetime, rule: RRule | None = None,
         return ref.date() + dt.timedelta(days=1)
     if symbol == "REL:DAY_AFTER_TOMORROW":
         return ref.date() + dt.timedelta(days=2)
+    if symbol.startswith("REL:MD_"):
+        m, d = (int(x) for x in symbol[len("REL:MD_"):].split("_"))
+        year = ref.year if (m, d) >= (ref.month, ref.day) else ref.year + 1
+        while True:
+            try:
+                return dt.date(year, m, d)
+            except ValueError:
+                # e.g. Feb 29 in a non-leap year -- roll to the next year that has it
+                year += 1
+                if year > ref.year + 8:
+                    raise ResolutionError(f"no valid date for {symbol!r}")
     if symbol.startswith("REL:MONTH_"):
         # "until December" means the NEXT December, not December of whatever year
         # the annotation happened to be written in. Keeping it symbolic is what
