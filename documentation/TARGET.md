@@ -9,19 +9,41 @@ stops gating anything.
 
 ## The gate
 
-At **M6**, the rule baseline is measured on the **Tier A frozen test set**. If it
-clears every threshold below, the correct engineering call is **ship rules, do
-not build the model**.
+The product is three questions. The gate is three groups of thresholds, one per
+question, each cleared independently.
 
-| Metric | Threshold | Measured by |
-|---|---|---|
-| Temporal slots exact-match | **≥ 0.90** | `score.l2_exact_match(...)["temporal_exact_match"]` |
-| SUMMARY span F1 | **≥ 0.75** | `score.span_prf(...)["per_type"]["SUMMARY"]["f1"]` |
-| Silent catastrophic rate | **≤ 2%** | `score.silent_catastrophic_rate(...)` |
-| RRULE occurrence-set equivalence | **≥ 0.90** | `score.rrule_equivalence(...)["occurrence_set_exact"]` |
+### 1. Is it a schedule?
+
+| Metric | Threshold |
+|---|---|
+| False-schedule rate — non-schedulable input that yields an event | **<= 5%** |
+| Status accuracy (4-way) | **>= 0.90** |
+
+Rules currently score **100% false-schedule** on the synthetic negatives: `nvm`
+becomes an event today, `Sat down for coffee` becomes a weekly Saturday. Nothing
+in a lookup table can see that the sentence is not about scheduling, which is why
+this question is the strongest argument for a learned model.
+
+### 2. What is going on the calendar?
+
+| Metric | Threshold |
+|---|---|
+| SUMMARY span F1 | **>= 0.75** |
+
+Deliberately the loosest bar. A slightly wrong title is cosmetic.
+
+### 3. When?
+
+| Metric | Threshold |
+|---|---|
+| Temporal slots exact-match | **>= 0.90** |
+| RRULE occurrence-set equivalence | **>= 0.90** |
+| Silent catastrophic rate | **<= 2%** |
 
 "Temporal slots" means DTSTART date+time, DTEND, FREQ, BYDAY, INTERVAL, and the
-UNTIL/COUNT bound. Not SUMMARY, not attendees, not location.
+bound. Silent catastrophic = a temporal slot is wrong *and* no ambiguity flag was
+raised: confidently wrong, user never warned. That is the failure that actually
+costs someone a class, and it is why question 3 is held tightest.
 
 ## Why these numbers
 
@@ -48,6 +70,8 @@ real input is demanding but not absurd for a well-tuned rule pipeline.
 
 - **No aggregate score.** A single blended number would let a strong SUMMARY F1
   paper over a weak BYDAY recall. Every threshold must be cleared independently.
+- **No ranking between the three questions.** They are not weighted against each
+  other. Failing question 1 badly is not offset by acing question 3.
 - **No latency or size target yet.** Those belong to M10 and only exist on the
   neural branch.
 - **No target for the synthetic pools.** Synthetic accuracy is not evidence; the
@@ -63,3 +87,4 @@ result.
 | Date | Change | Reason |
 |---|---|---|
 | 2026-08-26 | Initial declaration | Set before any baseline existed |
+| 2026-08-27 | Restructured into three questions; added rejection metrics | Product framing is "is it a schedule / what / when"; question 1 had no threshold |
