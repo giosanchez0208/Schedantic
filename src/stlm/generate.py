@@ -22,6 +22,7 @@ from . import daysets as ds
 from . import negatives as neg
 from . import refusals as ref
 from . import lexicon as lx
+from . import subjects as sub
 from .ir import L1, L2, DateTimeSpec, L2Event, RRule, Span
 
 # --- axes --------------------------------------------------------------------
@@ -31,7 +32,7 @@ AXES = {
         "none", "weekly_single", "weekly_multi", "daily",
         "interval", "bounded_until", "bounded_count", "negated",
     ],
-    "time_spec": ["none", "start_only", "start_end", "duration", "ambiguous"],
+    "time_spec": ["none", "start_only", "start_end", "duration", "ambiguous", "tod"],
     "date_spec": ["none", "rel_simple", "rel_weekday", "absolute", "month_only"],
     "slot_order": ["temporal_leading", "temporal_trailing", "temporal_split"],
     "register": ["institutional", "informal", "shorthand"],
@@ -51,6 +52,8 @@ def cell_is_valid(cell: dict) -> bool:
         return False  # nothing temporal at all -> that is the no_temporal class
     if cell["time_spec"] == "duration" and cell["recurrence_class"] == "negated":
         return False
+    if cell["time_spec"] == "tod" and cell["register"] == "institutional":
+        return False  # a timetable does not say "sometime in the morning"
     return True
 
 
@@ -97,6 +100,7 @@ AXIS_PRIOR: dict[str, list[tuple[str, float]]] = {
         ("start_only", 35.0), ("start_end", 25.0), ("none", 14.0),
         ("ambiguous", 25.0),      # [H] harvest 25.9% bare hour, no meridiem
         ("duration", 1.0),        # [H] harvest 0.98%
+        ("tod", 3.3),             # [H] dev 3.2% -- time-of-day word, no clock
     ],
     "date_spec": [
         ("none", 52.0), ("rel_simple", 16.0), ("rel_weekday", 14.0),
@@ -295,15 +299,55 @@ COMMON_TIMES = [
 
 
 def _summary_text(rng: random.Random, cell: dict) -> str:
-    r = rng.random()
-    if cell["register"] == "institutional" or r < 0.4:
-        code = f"{rng.choice(lx.SUBJECT_PREFIXES)}{rng.randrange(100, 500)}"
-        if rng.random() < 0.35:
+    """A title. Drawn from thousands of surfaces, not the old 58.
+
+    The old version returned a course code 40% of the time, which is a niche
+    form that dominated training and taught the model that titles look like
+    CCC101. Institutional register still leans that way; everything else now
+    samples the full concept inventory, including verb phrases and venues.
+    """
+    if cell["register"] == "institutional":
+        r = rng.random()
+        code = (f"{rng.choice(lx.SUBJECT_PREFIXES + sub.SUBJECT_PREFIXES_EXTRA)}"
+                f"{rng.randrange(100, 500)}")
+        if r < 0.45:
             return f"{code} {rng.choice(lx.EVENT_NOUNS)}"
-        return code
-    if r < 0.7:
-        return rng.choice(lx.ACTIVITIES)
-    return rng.choice(lx.EVENT_NOUNS)
+        if r < 0.7:
+            return code
+        return _concept(rng)
+
+    r = rng.random()
+    if r < 0.10:
+        code = (f"{rng.choice(lx.SUBJECT_PREFIXES + sub.SUBJECT_PREFIXES_EXTRA)}"
+                f"{rng.randrange(100, 500)}")
+        return f"{code} {rng.choice(lx.EVENT_NOUNS)}" if rng.random() < 0.4 else code
+    if r < 0.28:
+        # Verb phrase. The shape that was missing entirely, and the reason
+        # "walk the dog 8am" tagged `walk` as a recurrence.
+        return f"{rng.choice(sub.VERBS)} {rng.choice(sub.OBJECTS)}"
+    if r < 0.36:
+        return rng.choice(lx.EVENT_NOUNS)
+    base = _concept(rng)
+    if rng.random() < 0.18:
+        # A place is part of the title, so it is realized inside the summary.
+        joiner = rng.choice(["at", "at", "in", "@", "-"])
+        return f"{base} {joiner} {rng.choice(sub.VENUES)}"
+    return base
+
+
+def _concept(rng: random.Random) -> str:
+    """One concept, realized as one of its surfaces.
+
+    Sampling the CONCEPT and then the SURFACE is what makes this synonym
+    augmentation rather than a longer list: "grocery run", "palengke run" and
+    "supermarket run" are the same meaning wearing different words, so the model
+    cannot key on the string and has to use the position and the neighbours.
+    """
+    concept = rng.choice(_CONCEPT_KEYS)
+    return rng.choice(sub.CONCEPTS[concept])
+
+
+_CONCEPT_KEYS = sorted(sub.CONCEPTS)
 
 
 def _person_text(rng: random.Random) -> str:
@@ -325,6 +369,8 @@ def _time_pair(rng: random.Random, cell: dict) -> tuple[str, str | None]:
 
 
 def _render_time(rng: random.Random, canon: str, cell: dict, force_bare: bool) -> str:
+    if canon.startswith("TOD:"):
+        return rng.choice(sub.TOD_SURFACES[canon])
     surfaces = lx.TIMES.get(canon)
     if not surfaces:
         return canon
@@ -441,7 +487,14 @@ def generate_one(rng: random.Random, idx: int, cell: dict | None = None,
     has_time = cell["time_spec"] != "none"
     tstart, tend = (None, None)
     duration = None
-    if has_time:
+    if cell["time_spec"] == "tod":
+        # A time-of-day word IS the answer to "when", so it is a TSTART. The
+        # symbol survives to L2 and policy collapses it to a clock time at L3,
+        # which is what lets the UI say "~8am" instead of faking 08:00.
+        tstart = rng.choice(sorted(sub.TOD_SURFACES))
+        tend = None
+        flags.append("time_approximate")
+    elif has_time:
         tstart, tend = _time_pair(rng, cell)
         if cell["time_spec"] == "duration":
             duration = rng.choice([30, 45, 60, 90, 120, 180])
