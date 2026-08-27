@@ -82,6 +82,7 @@ REL_SYMBOLS = (
 #   REL:EASTER-2      Good Friday
 #   REL:NTH_4_3_11    4th Thursday of November
 #   REL:NTH_-1_0_8    last Monday of August
+_BYDAY_RE = re.compile(r"^[+-]?[1-5]?(?:MO|TU|WE|TH|FR|SA|SU)$")
 _EASTER_RE = re.compile(r"^REL:EASTER[+-]\d{1,3}$")
 _NTH_RE = re.compile(r"^REL:NTH_(-1|[1-5])_[0-6]_(1[0-2]|[1-9])$")
 
@@ -201,7 +202,11 @@ class RRule:
         if self.interval < 1:
             errs.append(f"interval must be >= 1, got {self.interval}")
         for d in self.byday:
-            if d not in WEEKDAYS:
+            # RFC 5545 allows an ordinal prefix: BYDAY=2SU is the 2nd Sunday of
+            # the month. Distinct from INTERVAL=2 on a weekly rule, which is
+            # every other Sunday. "every 2nd sunday" means the latter;
+            # "every second sunday OF THE MONTH" means this.
+            if not _BYDAY_RE.match(d):
                 errs.append(f"bad byday {d!r}")
         if self.until and self.count:
             errs.append("RFC 5545: UNTIL and COUNT are mutually exclusive")

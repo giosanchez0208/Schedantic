@@ -36,8 +36,11 @@ class Policy:
 
     # "this Monday" issued ON a Monday: does it mean today or next week?
     this_weekday_includes_today: bool = True
-    # "next Monday" issued on a Monday: +7 days from today's Monday.
-    next_weekday_min_offset: int = 7
+    # "next Monday" means the NEXT INSTANCE of Monday, not the Monday of next
+    # week. Rule of thumb: a schedule is written BEFORE the day it refers to, so
+    # the nearest forward match is what the writer meant. Resolved OQ-13.
+    # Set to 7 to get the "Monday of next week" reading instead.
+    next_weekday_min_offset: int = 1
     # A recurrence with no explicit anchor starts at the first matching date >= ref.
     default_to_future: bool = True
     # Bare month name ("until December") resolves to the 1st of that month, in the
@@ -142,6 +145,13 @@ def resolve_date(symbol: str, ref: dt.datetime, rule: RRule | None = None,
     raise ResolutionError(f"unknown symbol {symbol!r}")
 
 
+def _du_day(code: str):
+    """"2SU" -> dateutil SU(2); "SU" -> SU. Ordinal prefix per RFC 5545."""
+    n = code[:-2]
+    wd = DU_WEEKDAY[code[-2:]]
+    return wd(int(n)) if n else wd
+
+
 def build_rrule(rule: RRule, dtstart: dt.datetime, policy: Policy = DEFAULT_POLICY,
                 ref: dt.datetime | None = None) -> du.rrule:
     kw: dict = {
@@ -150,7 +160,7 @@ def build_rrule(rule: RRule, dtstart: dt.datetime, policy: Policy = DEFAULT_POLI
         "interval": rule.interval,
     }
     if rule.byday:
-        kw["byweekday"] = [DU_WEEKDAY[d] for d in rule.byday]
+        kw["byweekday"] = [_du_day(d) for d in rule.byday]
     if rule.bymonthday:
         kw["bymonthday"] = rule.bymonthday
     if rule.count:
@@ -251,8 +261,9 @@ def l2_to_jcal(l2: L2, ref: dt.datetime, tzid: str | None = None,
             eprops.append(["summary", {}, "text", ev.summary])
         if ev.location:
             eprops.append(["location", {}, "text", ev.location])
-        for a in ev.attendees:
-            eprops.append(["attendee", {"cn": a}, "cal-address", f"mailto:{_slug(a)}@invalid"])
+        # OQ-2 resolved: a named person is part of the answer to "what goes on
+        # the calendar", so they live in SUMMARY. No ATTENDEE property -- a
+        # fabricated mailto for "Ate Bea" is worse than nothing.
         if ev.rrule:
             eprops.append(["rrule", {}, "recur", rrule_to_jcal(ev.rrule, ref, policy)])
         if ev.exclude and ev.rrule:

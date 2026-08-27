@@ -105,6 +105,38 @@ def normalize_time(text: str, policy: Policy = DEFAULT_POLICY) -> tuple[str | No
     return f"{hh:02d}:{mm:02d}", flags
 
 
+_MERIDIEM_HINT = {
+    "morning": "am", "dawn": "am", "am": "am",
+    "afternoon": "pm", "evening": "pm", "tonight": "pm",
+    "night": "pm", "dusk": "pm", "pm": "pm",
+}
+_HINT_RE = re.compile(r"\b(morning|dawn|afternoon|evening|tonight|night|dusk)\b", re.I)
+
+
+def meridiem_hint(context: str) -> str | None:
+    """A time-of-day word next to a bare hour SETS the meridiem.
+
+    "3 in the morning" is 03:00 even though the 1-6 default says PM, and
+    "8 in the evening" is 20:00 even though 7-12 defaults to as-written. The
+    word is doing real disambiguating work here, so it must not be discarded as
+    redundant the way it is when an explicit am/pm is already present.
+    """
+    m = _HINT_RE.search(context or "")
+    return _MERIDIEM_HINT[m.group(1).lower()] if m else None
+
+
+def apply_meridiem_hint(value: str, hint: str | None) -> str:
+    """Re-point an inferred HH:MM at the half of the day the hint names."""
+    if not value or not hint:
+        return value
+    h, mnt = (int(x) for x in value.split(":"))
+    h12 = h % 12
+    h = h12 if hint == "am" else (h12 + 12 if h12 else 12)
+    if hint == "am" and h12 == 0:
+        h = 12 if value.startswith("12") else 0
+    return f"{h:02d}:{mnt:02d}"
+
+
 def normalize_end_time(text: str, start: str | None,
                        policy: Policy = DEFAULT_POLICY) -> tuple[str | None, set[str]]:
     """End times are constrained by the start: '8-5' means 08:00-17:00, not 05:00."""
@@ -173,7 +205,10 @@ def normalize_date(text: str) -> tuple[str | None, set[str]]:
 
     code = _DAY_ABBR.get(t)
     if code:
-        return f"REL:THIS_{code}", {"relative_date"}
+        # A BARE weekday, with no this/next qualifier. Read as the coming one,
+        # but flagged: "Wed stock" may well be a weekly rhythm. "this Monday"
+        # takes the branch above and is NOT flagged -- it is unambiguous.
+        return f"REL:THIS_{code}", {"relative_date", "recurrence_ambiguous"}
 
     m = _MD.match(t)
     if m:
@@ -193,8 +228,10 @@ def normalize_date(text: str) -> tuple[str | None, set[str]]:
 # --- recurrence --------------------------------------------------------------
 
 _INTERVAL_WORDS = {
-    "other": 2, "second": 2, "two": 2, "2": 2, "biweekly": 2, "bi-weekly": 2,
-    "fortnightly": 2, "alt": 2, "third": 3, "three": 3, "3": 3,
+    "other": 2, "second": 2, "2nd": 2, "two": 2, "2": 2,
+    "biweekly": 2, "bi-weekly": 2, "fortnightly": 2, "alt": 2,
+    "third": 3, "3rd": 3, "three": 3, "3": 3,
+    "fourth": 4, "4th": 4, "four": 4, "4": 4,
 }
 _NEG = re.compile(r"^(?:except|exc|excluding|but\s+not|not|minus|xcpt|no)\s*(?:on\s+)?(.*)$", re.I)
 
@@ -254,6 +291,17 @@ def _daycodes(text: str) -> list[str]:
     return seen
 
 
+_ORDINAL = {"first": 1, "1st": 1, "second": 2, "2nd": 2, "third": 3, "3rd": 3,
+            "fourth": 4, "4th": 4, "fifth": 5, "5th": 5, "last": -1}
+# "2nd sunday OF THE MONTH" is monthly BYDAY=2SU. Without the "of the month"
+# tail, "every 2nd sunday" means every OTHER sunday -- INTERVAL=2. Order and
+# the trailing phrase are the only things distinguishing them.
+_MONTHLY_ORDINAL_RE = re.compile(
+    r"\b(first|1st|second|2nd|third|3rd|fourth|4th|fifth|5th|last)\s+"
+    r"(mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)[a-z]*\s+of\s+(?:the|every|each)\s+month\b",
+    re.I)
+
+
 def normalize_recur(texts: list[str]) -> tuple[RRule | None, set[str], list[str]]:
     """Merge every RECUR span into one rule.
 
@@ -272,6 +320,14 @@ def normalize_recur(texts: list[str]) -> tuple[RRule | None, set[str], list[str]
     for raw in texts:
         t = re.sub(r"\s+", " ", raw.strip())
         low = t.lower()
+
+        mo = _MONTHLY_ORDINAL_RE.search(low)
+        if mo:
+            n = _ORDINAL[mo.group(1).lower()]
+            wd = _DAY_ABBR.get(mo.group(2).lower()) or _daycodes(mo.group(2))[0]
+            byday = [f"{n}{wd}"]
+            freq = "MONTHLY"
+            continue
 
         neg = _NEG.match(low)
         if neg:
@@ -305,8 +361,13 @@ def normalize_recur(texts: list[str]) -> tuple[RRule | None, set[str], list[str]
             freq = freq or "WEEKLY"
             continue
 
+        # Strip the recurrence lead-in so only the weekday cluster is left.
+        # \d+ alone missed ordinals -- "every 2nd sunday" kept "2nd" and the
+        # day tokenizer then rejected the whole string, returning no rule at all.
         stripped = re.sub(
-            r"^(every|each|tuwing)\s+(other\s+|second\s+|third\s+|\d+\s+|two\s+|three\s+)?",
+            r"^(?:every|each|tuwing)\s+"
+            r"(?:other\s+|second\s+|third\s+|fourth\s+|two\s+|three\s+|four\s+"
+            r"|\d+(?:st|nd|rd|th)?\s+)?",
             "", low).strip()
         for d in _daycodes(stripped or low):
             if d not in byday:
@@ -317,11 +378,14 @@ def normalize_recur(texts: list[str]) -> tuple[RRule | None, set[str], list[str]
         byday = [d for d in base if d not in excluded]
         freq = "WEEKLY"
 
+    if freq == "MONTHLY":
+        return RRule(freq="MONTHLY", interval=interval, byday=byday), flags, exclusions
     if not byday and freq is None:
         return None, flags, exclusions
     if byday:
         freq = "WEEKLY"
-    byday.sort(key=WEEKDAYS.index)
+    if freq != "MONTHLY":
+        byday.sort(key=WEEKDAYS.index)
     return RRule(freq=freq or "WEEKLY", interval=interval, byday=byday), flags, exclusions
 
 
@@ -387,10 +451,15 @@ def l1_to_l2(l1: L1, policy: Policy = DEFAULT_POLICY) -> tuple[L2, Trace]:
         rrule, rflags, exclusions = normalize_recur(pick("RECUR"))
         all_flags |= rflags
 
+        hint = meridiem_hint(l1.text)
         tstarts = pick("TSTART")
         start_val, sflags = (None, set())
         if tstarts:
             start_val, sflags = normalize_time(tstarts[0], policy)
+            if "ampm_inferred" in sflags and hint and not start_val.startswith("TOD:"):
+                start_val = apply_meridiem_hint(start_val, hint)
+                sflags.discard("ampm_ambiguous")
+                sflags.discard("ampm_inferred")
             all_flags |= sflags
             trace.note(f"events[{g_no}].dtstart.time", "normalize_time", tstarts[0])
 

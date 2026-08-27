@@ -139,6 +139,12 @@ NEGATION_RE = re.compile(
 )
 
 
+# Words that turn a weekday into a series. Without one of these (or a bound)
+# a lone weekday is read as a single upcoming occurrence.
+_REPEAT_MARKER = re.compile(
+    r"\b(every|each|tuwing|daily|weekly|biweekly|bi-weekly|fortnightly|alt|other|weekdays?|weekends?)\b", re.I)
+
+
 @dataclass
 class Proposal:
     type: str
@@ -239,6 +245,20 @@ def propose(text: str) -> list[Proposal]:
             continue
         chosen.append(p)
     chosen.sort(key=lambda p: p.start)
+
+    # A bare SINGLE weekday is a one-off, not a series -- "CCC101 thurs" differs
+    # from "CCC101 every thurs". Retype it DATE unless something in the line says
+    # it repeats: an explicit every/each/interval word, a second recurrence span,
+    # or a count/until bound (which only make sense on a series).
+    # Ratified in ANNOTATION_GUIDE.md; the asymmetric harm argument is there.
+    from .normalize import _daycodes as _dc
+
+    repeats = any(p.type == "BOUND" for p in chosen) or any(
+        p.type == "RECUR" and _REPEAT_MARKER.search(p.text) for p in chosen)
+    if not repeats:
+        for p in chosen:
+            if p.type == "RECUR" and p.rule == "daycode" and len(_dc(p.text)) == 1:
+                p.type = "DATE"
     return chosen
 
 
