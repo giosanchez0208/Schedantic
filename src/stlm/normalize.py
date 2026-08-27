@@ -211,7 +211,16 @@ def _daycodes(text: str) -> list[str]:
     # "MWF", "TThS" style clusters, longest-token-first so Th beats T.
     out, i = [], 0
     s = text.strip()
+    THREE = {"mon": "MO", "tue": "TU", "wed": "WE", "thu": "TH",
+             "fri": "FR", "sat": "SA", "sun": "SU"}
     while i < len(s):
+        # Three-letter abbreviations first. Without this, "MonThu" letter-parses
+        # as M + Th + u and the trailing u becomes Sunday.
+        three = s[i : i + 3].lower()
+        if three in THREE:
+            out.append(THREE[three])
+            i += 3
+            continue
         two = s[i : i + 2].lower()
         if two in ("th", "tu", "sa", "su", "mo", "we", "fr"):
             out.append({"th": "TH", "tu": "TU", "sa": "SA", "su": "SU",

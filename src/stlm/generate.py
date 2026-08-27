@@ -18,6 +18,7 @@ import random
 import string
 from dataclasses import dataclass, field
 
+from . import daysets as ds
 from . import lexicon as lx
 from .ir import L1, L2, DateTimeSpec, L2Event, RRule, Span
 
@@ -344,27 +345,27 @@ def _make_rrule(rng: random.Random, cell: dict) -> tuple[RRule | None, list[str]
     if rc == "none":
         return None, flags
     if rc == "weekly_single":
-        return RRule(freq="WEEKLY", byday=rng.choice(BYDAY_SETS_SINGLE).split(",")), flags
+        return RRule(freq="WEEKLY", byday=ds.sample(rng)), flags
     if rc == "weekly_multi":
-        return RRule(freq="WEEKLY", byday=rng.choice(BYDAY_SETS_MULTI).split(",")), flags
+        return RRule(freq="WEEKLY", byday=ds.sample(rng, multi_only=True)), flags
     if rc == "daily":
         return RRule(freq="DAILY"), flags
     if rc == "interval":
         return RRule(
             freq="WEEKLY", interval=rng.choice([2, 2, 2, 3]),
-            byday=rng.choice(BYDAY_SETS_SINGLE).split(","),
+            byday=ds.sample(rng),
         ), flags
     if rc == "bounded_until":
         m = rng.randrange(1, 13)
         flags.append("bounded_until")
         return RRule(
-            freq="WEEKLY", byday=rng.choice(BYDAY_SETS_MULTI).split(","),
+            freq="WEEKLY", byday=ds.sample(rng, multi_only=True),
             until=f"REL:MONTH_{m}",  # symbolic: "the next <month>", never a fixed year
         ), flags
     if rc == "bounded_count":
         flags.append("bounded_count")
         return RRule(
-            freq="WEEKLY", byday=rng.choice(BYDAY_SETS_SINGLE).split(","),
+            freq="WEEKLY", byday=ds.sample(rng),
             count=rng.choice([4, 5, 6, 8, 10, 12]),
         ), flags
     if rc == "negated":
@@ -385,9 +386,9 @@ def _render_recur(rng: random.Random, rr: RRule, cell: dict) -> str:
         name = lx._DAY_NAMES.get(excluded[0], "Friday") if excluded else "Friday"
         neg = wchoice(rng, lx.NEGATION).format(name)
         return f"{base} {neg}"
-    key = ",".join(rr.byday)
-    surfaces = lx.DAY_CODES.get(key)
-    day_txt = wchoice(rng, surfaces) if surfaces else key
+    # Render the set compositionally. The old lookup only knew 13 sets and fell
+    # back to emitting the raw "MO,WE" key as surface text for anything else.
+    day_txt = ds.render(rr.byday, rng)
     if rc == "interval":
         iv = wchoice(rng, lx.INTERVAL_PHRASES.get(rr.interval, [("every other", 1.0)]))
         return f"{iv} {day_txt}"
@@ -527,8 +528,7 @@ def generate_one(rng: random.Random, idx: int, cell: dict | None = None,
         for e in range(n_events):
             days = rr.byday or ["MO"]
             d = days[e % len(days)]
-            surf = lx.DAY_CODES.get(d, [(d, 1.0)])
-            temporal.append(Chunk(wchoice(rng, surf), "RECUR", [e]))
+            temporal.append(Chunk(ds.render([d], rng), "RECUR", [e]))
             if has_time:
                 temporal.append(Chunk(" ", None))
                 temporal.append(

@@ -310,6 +310,41 @@ def test_known_baseline_gap():
               l2.events[0].rrule.byday == ["MO", "WE"], str(l2.events[0].rrule.byday))
 
 
+def test_daysets():
+    print("\n[augment] weekday-set rendering round-trips")
+    import random as _r
+    from stlm import daysets as ds
+    from stlm.normalize import _daycodes
+
+    rng = _r.Random(0)
+    bad = []
+    for days, _w in ds.PLAUSIBLE:
+        for _ in range(4):
+            surf = ds.render(days, rng)
+            if sorted(_daycodes(surf)) != sorted(ds._order(days)):
+                bad.append((days, surf, _daycodes(surf)))
+    check(f"every plausible weekday set round-trips ({len(ds.PLAUSIBLE)} sets x 4 styles)",
+          not bad, f"{len(bad)} broken, e.g. {bad[:3]}")
+
+    # The specific sets the corpus had zero coverage of.
+    for days in (["TU", "WE"], ["WE", "TH"], ["TH", "FR"], ["MO", "TU", "WE"],
+                 ["MO", "TH", "SU"], ["SA", "SU"]):
+        forms = {ds.render(days, rng) for _ in range(20)}
+        ok = len(forms) >= 3 and all(
+            sorted(_daycodes(f)) == sorted(ds._order(days)) for f in forms)
+        check(f"{','.join(days)} renders >=3 distinct valid ways", ok,
+              f"got {sorted(forms)}")
+
+    # Ambiguity guards: these two collide unless render() validates its output.
+    for days, forbidden in ((["MO", "FR"], "M-F"), (["TU", "SU"], "TU")):
+        forms = {ds.render(days, rng) for _ in range(30)}
+        check(f"{','.join(days)} never renders as the ambiguous {forbidden!r}",
+              forbidden not in forms, f"got {sorted(forms)}")
+
+    check("3-letter abbrevs parse without a trailing-letter artifact",
+          sorted(_daycodes("MonThu")) == ["MO", "TH"], str(_daycodes("MonThu")))
+
+
 def test_holidays():
     print("\n[named dates] holiday interpreter")
     from stlm.holidays import easter, lookup, nth_weekday
@@ -368,6 +403,7 @@ if __name__ == "__main__":
     test_generator_integrity()
     test_normalizer()
     test_known_baseline_gap()
+    test_daysets()
     test_holidays()
     print("\n" + "=" * 60)
     if FAILURES:
