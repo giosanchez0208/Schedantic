@@ -5,7 +5,7 @@
 # because the same party wrote the rule proposer; seeing its suggestions would
 # launder the rules into gold and make M5 score against its own author.
 #
-# One judgement call applied consistently, NOT yet in ANNOTATION_GUIDE.md:
+# Bare-weekday rule now RATIFIED in ANNOTATION_GUIDE.md:
 #   A bare SINGLE weekday ("THURS lunch", "Wed stock") is tagged DATE, read as a
 #   one-off on the coming Thursday. A multi-day code ("MWF", "TTh"), an explicit
 #   "every", or a count/until bound is tagged RECUR. Rationale: genuine recurrence
@@ -37,7 +37,7 @@ SUMMARY  | LUNCH
 PERSON   | ATE BEA
 events: all
 status: ok
-flags: all_day
+flags: all_day recurrence_ambiguous
 
 === h041c779359 [sebastian] ===
 > every wed 6pm aquarium Docent shift til the exhibit closes in april
@@ -79,7 +79,7 @@ TSTART   | 9:30
 TEND     | 11 am
 events: all
 status: ok
-flags:
+flags: recurrence_ambiguous
 
 === h06423d311a [kylar] ===
 > Biweekly staff meeting every other Tuesday at 10am in conference room
@@ -295,7 +295,7 @@ DATE     | sun
 SUMMARY  | Stew
 events: DATE#1 SUMMARY#1 ; DATE#2 SUMMARY#2
 status: ok
-flags: multi_event all_day
+flags: multi_event all_day recurrence_ambiguous
 
 === h1d32582ed8 [kylar] ===
 > gYm tmrw at 6pm bro dont forget your water bottle and towel please
@@ -330,7 +330,7 @@ TSTART   | 15
 SUMMARY  | department assembly
 events: all
 status: ok
-flags: missing_end_time
+flags: missing_end_time recurrence_ambiguous
 note: "15" could be 15:00 or the 15th of the month; read as 24h time
 
 === h211fc7e171 [kylar] ===
@@ -360,7 +360,7 @@ DATE     | tuesday
 TSTART   | 10am
 events: all
 status: ok
-flags: missing_end_time
+flags: missing_end_time recurrence_ambiguous
 
 === h22abf6f8bf [sarah] ===
 > tom lunch
@@ -394,7 +394,7 @@ DATE     | Sat
 TSTART   | 8am
 events: all
 status: ok
-flags: missing_end_time
+flags: missing_end_time recurrence_ambiguous
 
 === h24d09af855 [sebastian] ===
 > COUNTED 40 SEA STARS ON ONE TRANSECT, 12 OF THEM WASTING
@@ -421,7 +421,7 @@ SUMMARY  | lecture series on economics
 LOCATION | room 201
 events: all
 status: ok
-flags: ampm_ambiguous ampm_inferred missing_end_time
+flags: ampm_ambiguous ampm_inferred missing_end_time recurrence_ambiguous
 
 === h2808aeb897 [sam] ===
 > TTh 6 baLl at the covered court til 8
@@ -474,7 +474,7 @@ SUMMARY  | check-in
 PERSON   | Dean Santos
 events: all
 status: ok
-flags: missing_end_time
+flags: missing_end_time recurrence_ambiguous
 
 === h2d549a028e [sam] ===
 > Every Wed 6pm for 2 hrs, NASM review class at the training center
@@ -541,7 +541,7 @@ TSTART   | 2
 TEND     | 3:15
 events: all
 status: ok
-flags: ampm_ambiguous ampm_inferred
+flags: ampm_ambiguous ampm_inferred recurrence_ambiguous
 
 === h3292153b75 [sarah] ===
 > Class MW 9, lab F
@@ -581,7 +581,7 @@ SUMMARY  | gym
 DURATION | for 90 mins
 events: all
 status: ok
-flags: duration_given
+flags: duration_given recurrence_ambiguous
 
 === h351ea63fc5 [sam] ===
 > Wed stock, Sat sell
@@ -591,7 +591,7 @@ DATE     | Sat
 SUMMARY  | sell
 events: DATE#1 SUMMARY#1 ; DATE#2 SUMMARY#2
 status: ok
-flags: multi_event all_day
+flags: multi_event all_day recurrence_ambiguous
 
 === h3579973655 [kara] ===
 > Pastry drop from Tasha daily except Sun

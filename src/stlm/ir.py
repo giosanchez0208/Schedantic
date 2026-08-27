@@ -48,6 +48,7 @@ FLAGS = (
     "time_approximate",   # time came from "morning"/"evening", not a clock
     "named_date",         # "christmas", "good friday" -- see holidays.py
     "named_date_unresolvable",  # lunar holiday; moves yearly, not guessed
+    "recurrence_ambiguous",     # bare single weekday: one-off or weekly? See guide.
 )
 
 WEEKDAYS = ("MO", "TU", "WE", "TH", "FR", "SA", "SU")

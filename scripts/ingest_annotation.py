@@ -157,6 +157,21 @@ def main() -> None:
     real = [r for r in rows if r["spans"] or r["status"] != "ok"]
     skipped = len(rows) - len(real)
 
+    # Overlapping batch files silently double-count into gold, which inflates
+    # every metric computed from it. Keep the last annotation of each id and say
+    # loudly which files collided.
+    by_id: dict[str, dict] = {}
+    collisions: dict[str, list[str]] = {}
+    for r in real:
+        if r["id"] in by_id and by_id[r["id"]]["file"] != r["file"]:
+            collisions.setdefault(r["id"], [by_id[r["id"]]["file"]]).append(r["file"])
+        by_id[r["id"]] = r
+    if collisions:
+        files = sorted({f for v in collisions.values() for f in v})
+        print(f"\n!! {len(collisions)} id(s) annotated in more than one file: {files}")
+        print("   Kept the last occurrence. Delete the superseded file to silence this.")
+    real = list(by_id.values())
+
     write_jsonl(ROOT / "corpus" / "gold_l1.jsonl", real)
     print(f"\nwrote corpus/gold_l1.jsonl: {len(real)} items"
           + (f"  ({skipped} left blank, skipped)" if skipped else ""))
