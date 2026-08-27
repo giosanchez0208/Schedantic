@@ -188,3 +188,35 @@ That is exactly the Geva et al. result, reproduced by accident on 98 strings. He
 And now the discipline problem: I know how to fix it in about ten minutes, and I'm not going to. Fixing a parser against the held-out set is how a test set stops being one. Same for the three other defects I found while poking at it &mdash; a greedy `NO ...` negation that eats the rest of the line, `next weds` not resolving, and `the tues after Halloween` silently flattening to Halloween itself, which is a silent catastrophic error by my own definition. All four are written up in FINDINGS.md under a heading that says don't fix these without re-splitting.
 
 TLDR: the split did its job, which is to embarrass me. A number that only exists because the parser was built next to the data isn't a number.
+
+### Stepping back: what the data actually is now
+
+Worth writing down where this landed, because it is not where I started.
+
+The plan on day one was: write 500 lines myself, find the patterns, augment. Every part of that turned out to be wrong in a different way. I can't write 500 lines without baking in my own idiolect. The patterns were never the hard part. And "augment" was doing a lot of work in that sentence for something I hadn't thought through.
+
+What it became instead:
+
+| | |
+|---|---|
+| harvested real strings | 610 |
+| human-written strings | 407, from 7 people |
+| fully annotated gold | 407 rows &mdash; 323 ok, 56 not-a-schedule, 18 unrepresentable, 10 unresolvable |
+| dev / test | 309 / 98, split by author |
+| generator axes | 9 |
+| negative frames | 36, in 9 families &mdash; 8,048 distinct strings per 20k draws, up from 24 |
+| weekday sets renderable | 127 |
+
+The shape of it flipped somewhere around phase 8 and I didn't notice at the time. The human data stopped being the training set and became the **measuring stick**. 407 strings is not enough to train anything. It is more than enough to tell me whether a thing works, and to tell me *what kind* of writing exists in the world &mdash; which is the part I could never have invented, and the part that makes the synthetic layer honest instead of circular.
+
+Because that's the trap I kept almost walking into. A generator I write, scored against gold I derive from the same code, is a machine for producing numbers that mean nothing. It happened once with the SUMMARY trim and cost me 0.067 of fake score. The defence isn't "don't generate", it's: **generate the training data, harvest the yardstick.** Real people wrote `Ms. Sunday in Accounts Payable` and `the pallet Sat in the alley for 2 hrs` and `8am gym 9am`. I write the 8,000 variations of things I already know are schedules.
+
+The negatives are the clearest case. 56 humans-written not-a-schedule lines, which are the entire evaluation set for question 1 and are never trained on. From reading those 56 I could see *why* each one wasn't a schedule &mdash; day-as-name, day-as-verb, cancellation, question-about-when, number-that-isn't-a-time &mdash; and sampling the reason instead of the string took it from 24 distinct to 8,000. The frames are mine. The insight that "august body" is a thing people write isn't.
+
+Same story with the weekday sets. There are 127 usable combinations and the corpus naturally contains about 13 of them, because people write MWF and TTh and almost nothing else. If I want the model to know SatSun and MoThSu are the same kind of object as MWF, that has to be manufactured. No amount of collecting gets there.
+
+So: mostly synthetic, deliberately, with the human data doing the two jobs it's actually good at &mdash; telling me what real text looks like, and grading.
+
+None of this is a model yet. Everything above is data, an IR, a rule baseline, and a scorer. The baseline is frozen at 1.000 false-schedule, which is a complete failure at question 1 and always was going to be &mdash; a regex that matches `Sat` cannot see whether the sentence is about scheduling. That's the whole argument for the thing I'm about to build, and it's now measured rather than asserted.
+
+TLDR: I set out to collect data and ended up collecting judgement. The corpus is small on purpose. The generator is large on purpose. Next entry should have a loss curve in it.
