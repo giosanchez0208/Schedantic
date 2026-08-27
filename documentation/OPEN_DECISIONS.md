@@ -47,10 +47,10 @@ These shape gold. Changing one means revisiting the annotated items.
 |---|---|---|---|
 | ~~B1~~ | Bare single weekday | **`DATE` unless a repeat marker or a bound is present.** `CCC101 thurs` ≠ `CCC101 every thurs`. Parser now matches gold. | **Ratified 2026-08-27**, but genuinely ambiguous. `Wed stock, Sat sell` reads as a weekly rhythm; `THURS lunch` as one-off. Affects ~1 in 3 annotations. |
 | B2 | `til 8` vs `til finals` | bare hour → `TEND`; anything else → `BOUND` | Same word, two span types, decided by what follows it. |
-| B3 | Prepositions in LOCATION | included — `at the chapel`, not `the chapel` | Arbitrary but must be consistent. Same question never arose for PERSON. |
-| B4 | Trailing qualifiers | untagged — `before class`, `by eod`, `sharp`, `dont forget` | `by eod` is arguably a real deadline. `sharp` is arguably a precision marker. Both dropped. |
+| ~~B3~~ | Prepositions in LOCATION | **Moot** — the LOCATION slot was removed 2026-08-27. |
+| ~~B4~~ | Trailing qualifiers | **TAGGED as SUMMARY.** Reversed 2026-08-27 with OQ-14 — keeping the writer's own words is the point. |
 | B5 | Redundant time-of-day | dropped when a clock time is present — `every tues night at 9PM` tags only `9PM` | Defensible, but it means `night` is a span in one string and not in another. |
-| B6 | PERSON | both folded into the summary string *and* emitted as `attendees` | Duplication on purpose. May be wrong for either consumer. |
+| ~~B6~~ | PERSON | **Span kept, no ATTENDEE emitted.** Folding PERSON into SUMMARY as well was tested and was worse (0.689 → 0.643). |
 | B7 | Bare `12` | noon, not midnight | `Lunch w Ate Bea at 12` — obviously right here, not obviously right always. |
 | B8 | `f 15` | `15` read as 15:00 | Could be Friday **the 15th**. No way to tell from the string. |
 | B9 | Multi-event splitting | only when weekday **and** time both differ | `then badminton after, til 9 pm` was kept as one event because it shares the time range. Judgement call. |

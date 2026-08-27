@@ -390,6 +390,50 @@ How often does the natural reading want overlapping spans? If frequent, Design r
 
 p50 / p90 / p99 / max in **UTF-8 bytes**, not characters. Sets `max_len` and sizes the positional embedding table. Also: how much non-ASCII is present, since one visual character can be 2–4 bytes.
 
+### OQ-13 — "next Monday" semantics  **CLOSED**
+
+The next INSTANCE of Monday, not the Monday of next week. A schedule is written
+before the day it names, so the nearest forward match is what the writer meant.
+`Policy.next_weekday_min_offset = 1`; set it to `7` for the other reading.
+
+### OQ-14 — what happens to non-temporal text?  **CLOSED: it is the title**
+
+Closed once as "leave it untagged", then REVERSED the same day.
+
+The first answer said `please arrive early` answers none of the three questions,
+so it should be dropped. Measurement showed that conflicts with the rule sitting
+next to it: if everything non-temporal is SUMMARY then chatter is SUMMARY too,
+and no rule separates `dinner` (a real title fragment) from `bro dont forget your
+towel` (chatter). Telling those apart is judgement, not pattern.
+
+Resolved in favour of keeping it. `Gym, bro dont forget your water bottle and
+towel please` is how the writer wanted the note to read, and silently discarding
+someone's own words is the worse failure. No DESCRIPTION slot — it lands in
+SUMMARY, with non-adjacent fragments joined by a comma.
+
+Effect: SUMMARY F1 0.565 → 0.717, whole-event exact match 0.512 → 0.689.
+
+### OQ-15 — time-of-day words  **CLOSED**
+
+Implemented as symbolic `TOD:` values resolved by policy at L3. Measured 3.3%
+load-bearing (no clock time present) and 7.0% redundant (a clock time is also
+there, so the word is ignored). A time-of-day word beside a bare hour also SETS
+the meridiem: `3 in the morning` is 03:00, not the 1–6 default of 15:00.
+
+Named holidays were not implemented on that pass — 0 hits in 512 real strings —
+but were added later, once it was clear the zero came from the prompt design
+rather than from the world. See `holidays.py`.
+
+### OQ-16 — LOCATION slot  **CLOSED: removed**
+
+A place is part of the answer to "what goes on the calendar", so it belongs in
+SUMMARY, the same call already made for PERSON. Keeping it measurably hurt: at
+0.43 F1 it was the weakest slot, and every missed location became a SUMMARY
+boundary error as well.
+
+Folding PERSON in too was tested and was WORSE (0.689 → 0.643) — `with X` is a
+reliable cue for where the title ends, so that span earns its place.
+
 ---
 
 ## Changelog

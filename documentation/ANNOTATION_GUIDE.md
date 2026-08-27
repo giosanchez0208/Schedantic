@@ -33,11 +33,12 @@ silently omitted is impossible.
 | `BOUND` | says when the *series* stops | `until Dec`, `till finals`, `x8`, `for 8 weeks` |
 | `DURATION` | says how long it lasts, instead of an end time | `for 90 mins`, `2 hrs` |
 | `PERSON` | names who is attending | `Sir Jefferson`, `mom`, `Ate Bea` |
-| `LOCATION` | says where | `Rm 201`, `at the chapel`, `Zoom` |
-| `SUMMARY` | is the title — everything left over | `CCC100`, `staff meeting`, `mass` |
+| `SUMMARY` | is the title — **everything left over**, including places and chatter | `CCC100`, `mass at the chapel`, `bro dont forget your towel` |
 
 `SUMMARY` is the **residual**: whatever is not one of the others. It never
-includes a time, a weekday, a person, or a place.
+includes a time, a weekday, or a person. It DOES include places and trailing
+remarks. Multiple non-adjacent fragments are tagged separately and joined with
+a comma at L2.
 
 Spans **must not overlap**. One character belongs to at most one span.
 
@@ -54,14 +55,14 @@ annotated the same way every time.
 | Two phrases say the same recurrence — `Biweekly … every other Tuesday` | **Tag both** as RECUR, same event. |
 | Recurrence stated as base + exception — `every day but not Sunday` | **Tag both** as RECUR, same event. |
 | Recurrence words inside a title — `Biweekly staff meeting` | `Biweekly` is RECUR, `staff meeting` is SUMMARY. Temporal words are never part of the title. |
-| Title and place run together — `mass at the chapel` | SUMMARY `mass`, LOCATION `at the chapel`. |
+| Title and place run together — `mass at the chapel` | **All of it is SUMMARY.** The LOCATION slot was removed 2026-08-27; a place is part of what goes on the calendar. |
 | No title at all — `Every other Tue` | No SUMMARY span. Add flag `missing_summary`. That is a valid annotation, not a mistake. |
 | Leading preposition — `at the chapel`, `in room 201` | Include it in the span. Be consistent: always include, never sometimes. |
 | Connector between spans — the `with` in `X with Y` | Belongs to no span. Leave it untagged. |
 | Bare hour, no am/pm — `MW 8` | Tag `8` as TSTART. Add flags `ampm_ambiguous ampm_inferred`. |
 | Time range — `8-12nn` | TSTART `8`, TEND `12nn`. The `-` is untagged. |
 | Two events in one line — `Class MW 9, lab F` | Nothing gets deleted. Split with the `events:` line. |
-| Trailing chatter — `please arrive early`, `bro`, `dont forget` | **Leave it untagged.** It is not a time, a title, or a place. Low coverage on such a line is correct, not a mistake. See OQ-14. |
+| Trailing chatter — `please arrive early`, `bro dont forget your towel` | **TAG IT as SUMMARY.** Reversed 2026-08-27. Everything not temporal is the title, chatter included: `Gym, bro dont forget your water bottle` is how the writer wanted the note to read. See OQ-14. |
 | Same text appears twice — `8am gym 9am` | Disambiguate with `#`: `TSTART \| 8am` and `TEND \| 9am #2` if needed. |
 
 ---

@@ -73,7 +73,7 @@ Everything currently decided by default or judgement rather than evidence:
 | Answered with evidence | OQ-1, OQ-4, OQ-5, OQ-8, OQ-9, OQ-12 |
 | Answered, weak evidence | OQ-3, OQ-7 |
 | Open | (none from the original 15) |
-| Closed | OQ-2 · OQ-6 · OQ-10 · OQ-11 · OQ-13 · OQ-14 · OQ-15 |
+| Closed | OQ-2 · OQ-6 · OQ-10 · OQ-11 · OQ-13 · OQ-14 · OQ-15 · OQ-16 |
 
 ---
 

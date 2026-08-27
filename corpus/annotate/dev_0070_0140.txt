@@ -6,241 +6,251 @@
 
 === h3b6f37ef00 [sebastian] ===
 > Grocery run q2 Wks
-SUMMARY  | Grocery run
+
 RECUR    | q2 Wks
+SUMMARY  | Grocery run
 events: all
 status: ok
 flags: all_day missing_date
 note: "q2 Wks" = every 2 weeks; "q" for "every" is not in the lexicon
-
 === h3bc5f27bbc [sam] ===
 > when is the league game of bro rome again?
+
+SUMMARY  | when is the league game of bro rome again?
 events: all
 status: no_temporal
 flags: temporal_lookalike
 note: asking when something is, not scheduling it
-
 === h3bf0d859cf [sebastian] ===
 > TTh work study hours in the Front office, 8am before class
+
 RECUR    | TTh
-SUMMARY  | work study hours
-SUMMARY  | in the Front office
 TSTART   | 8am
+SUMMARY  | work study hours in the Front office
+SUMMARY  | before class
 events: all
 status: ok
 flags: missing_end_time
 note: "before class" is a qualifier with no slot; untagged
-
 === h3c932c8c01 [sarah] ===
 > 2pm conference call w/ Atty Reyes
+
 TSTART   | 2pm
-SUMMARY  | conference call
 PERSON   | Atty Reyes
+SUMMARY  | conference call w/
 events: all
 status: ok
 flags: missing_date missing_end_time
-
 === h3da4fa7685 [sebastian] ===
 > Beach cleanup with the dive club sat mornings, 6 of them this term
-SUMMARY  | Beach cleanup
+
 PERSON   | the dive club
 RECUR    | sat
 TSTART   | mornings
 BOUND    | 6 of them
+SUMMARY  | Beach cleanup
+SUMMARY  | this term
 events: all
 status: ok
 flags: bounded_count time_approximate
 note: RECUR not DATE -- the count bound implies repetition
-
 === h3e39b12602 [sebastian] ===
 > Bass practice in theos garage every tues night at 9PM sharp
-SUMMARY  | Bass practice
-SUMMARY  | in theos garage
+
 RECUR    | every tues
 TSTART   | 9PM
+SUMMARY  | Bass practice in theos garage
+SUMMARY  | night
+SUMMARY  | sharp
 events: all
 status: ok
 flags: missing_end_time
 note: "night" is redundant with the explicit 9PM; untagged per the redundant-TOD rule
-
 === h3f02b03f3f [sam] ===
 > The panel sat for 3 hours before releasing the results.
+
+SUMMARY  | panel sat for 3 hours before releasing the results
 events: all
 status: no_temporal
 flags: temporal_lookalike
 note: "sat" is a verb; "3 hours" describes a past duration
-
 === h3faff3f03e [sarah] ===
 > every tue 4 therapy x8
+
 RECUR    | every tue
 TSTART   | 4
-SUMMARY  | therapy
 BOUND    | x8
+SUMMARY  | therapy
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred bounded_count missing_end_time
-
 === h400ece056f [sam] ===
 > Morning jog every day that it doesnt rain, if rain treadmill instead
+
+SUMMARY  | Morning jog every day that it doesnt rain, if rain treadmill instead
 events: all
 status: unrepresentable
 flags:
 note: conditional recurrence with a fallback branch -- neither is expressible
-
 === h4038f482bc [sam] ===
 > lets hoop one of these days when ur not busy
+
+SUMMARY  | lets hoop one of these days when ur not busy
 events: all
 status: unresolvable
 flags:
 note: real intent, no date or time anywhere
-
 === h40e5c06ce4 [sebastian] ===
 > sat 9 chums grooming n the shots he skipped, done abt 11:15
+
 DATE     | sat
 TSTART   | 9
-SUMMARY  | chums grooming n the shots he skipped
 TEND     | 11:15
+SUMMARY  | chums grooming n the shots he skipped, done abt
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred recurrence_ambiguous time_approximate
 note: "done abt 11:15" is an approximate end time
-
 === h410e30aa23 [kara] ===
 > when's dez free to shoot the new arrivals?
+
+SUMMARY  | when's dez free to shoot the new arrivals?
 events: all
 status: no_temporal
 flags: temporal_lookalike
 note: asking about availability
-
 === h414cb121ce [sarah] ===
 > 8am run for 30 mins
+
 TSTART   | 8am
-SUMMARY  | run
 DURATION | for 30 mins
+SUMMARY  | run
 events: all
 status: ok
 flags: duration_given missing_date
-
 === h42ab11aecc [sarah] ===
 > MONDAY 1ON1 WITH BOSS
+
 DATE     | MONDAY
-SUMMARY  | 1ON1
 PERSON   | BOSS
+SUMMARY  | 1ON1
 events: all
 status: ok
 flags: all_day recurrence_ambiguous
-
 === h43785dbe62 [sarah] ===
 > Lunch w Ate Bea at 12
-SUMMARY  | Lunch
+
 PERSON   | Ate Bea
 TSTART   | 12
+SUMMARY  | Lunch
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred missing_date missing_end_time
 note: bare "12" reads as noon rather than midnight
-
 === h437eb3da81 [sarah] ===
 > Meeting on Zoom 3pm
-SUMMARY  | Meeting
-SUMMARY  | on Zoom
+
 TSTART   | 3pm
+SUMMARY  | Meeting on Zoom
 events: all
 status: ok
 flags: missing_date missing_end_time
-
 === h4393715e02 [sam] ===
 > what time is the game later, 7 or 8?
+
+SUMMARY  | what time is the game later, 7 or 8?
 events: all
 status: no_temporal
 flags: temporal_lookalike
-
 === h441f549fb1 [sarah] ===
 > Card deadline on the 15th dont forget
-SUMMARY  | Card deadline
+
 DATE     | on the 15th
+SUMMARY  | Card deadline
+SUMMARY  | dont forget
 events: all
 status: ok
 flags: all_day
 note: day-of-month with no month stated -- resolves to the next 15th
-
 === h4449c1b48e [kylar] ===
 > Dentist appt Sept 3 at 2pm dont forget to bring insurance card
-SUMMARY  | Dentist appt
+
 DATE     | Sept 3
 TSTART   | 2pm
+SUMMARY  | Dentist appt
+SUMMARY  | dont forget to bring insurance card
 events: all
 status: ok
 flags: missing_end_time
-
 === h46bd80add8 [kylar] ===
 > DAILY EXCEPT SUN
+
 RECUR    | DAILY
 RECUR    | EXCEPT SUN
 events: all
 status: ok
 flags: negated_recurrence missing_summary all_day
-
 === h497d5988a9 [sarah] ===
 > The 15th is the deadline for grades
+
 DATE     | The 15th
-SUMMARY  | the deadline for grades
+SUMMARY  | is the deadline for grades
 events: all
 status: ok
 flags: all_day
-
 === h4bc767ef98 [sarah] ===
 > Gym mwf 6am, yoga tth 7pm
-SUMMARY  | Gym
+
 RECUR    | mwf
 TSTART   | 6am
-SUMMARY  | yoga
 RECUR    | tth
 TSTART   | 7pm
+SUMMARY  | Gym
+SUMMARY  | , yoga
 events: SUMMARY#1 RECUR#1 TSTART#1 ; SUMMARY#2 RECUR#2 TSTART#2
 status: ok
 flags: multi_event missing_end_time
-
 === h4bdf62d5af [kara] ===
 > Tax set aside every friday til aPril
-SUMMARY  | Tax set aside
+
 RECUR    | every friday
 BOUND    | til aPril
+SUMMARY  | Tax set aside
 events: all
 status: ok
 flags: bounded_until all_day
-
 === h4be5e92818 [sarah] ===
 > 9am yoga for an hr
+
 TSTART   | 9am
-SUMMARY  | yoga
 DURATION | for an hr
+SUMMARY  | yoga
 events: all
 status: ok
 flags: duration_given missing_date
-
 === h4c3dbf25ca [sarah] ===
 > Meeting w boss at 3
-SUMMARY  | Meeting
+
 PERSON   | boss
 TSTART   | 3
+SUMMARY  | Meeting
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred missing_date missing_end_time
-
 === h4c52955dae [sam] ===
 > Feeding program at the village hall every Sat 7am for 8 wks only
-SUMMARY  | Feeding program
-SUMMARY  | at the village hall
+
 RECUR    | every Sat
 TSTART   | 7am
 BOUND    | for 8 wks
+SUMMARY  | Feeding program at the village hall
+SUMMARY  | only
 events: all
 status: ok
 flags: bounded_count missing_end_time
-
 === h4cb4306c2a [sarah] ===
 > TTh 5pm till finals
+
 RECUR    | TTh
 TSTART   | 5pm
 BOUND    | till finals
@@ -248,276 +258,288 @@ events: all
 status: ok
 flags: bounded_until missing_summary missing_end_time
 note: "finals" is a term milestone with no fixed date -- bound is unresolvable but real
-
 === h4cee2137d2 [kara] ===
 > fri prep, sat Bake
+
 DATE     | fri
-SUMMARY  | prep
 DATE     | sat
+SUMMARY  | prep
 SUMMARY  | Bake
 events: DATE#1 SUMMARY#1 ; DATE#2 SUMMARY#2
 status: ok
 flags: multi_event all_day recurrence_ambiguous
-
 === h4daa4a0c5d [kara] ===
 > every 2nd sun hospitality Team at church, 8am call
+
 RECUR    | every 2nd sun
-SUMMARY  | hospitality Team
-SUMMARY  | at church
 TSTART   | 8am
+SUMMARY  | hospitality Team at church
+SUMMARY  | call
 events: all
 status: ok
 flags: missing_end_time
 note: "every 2nd sun" is the 2nd Sunday of the month, not every-other-Sunday -- monthly BYDAY=2SU, which RRule cannot currently express
-
 === h4db752f9ab [kylar] ===
 > 6pm gym for 90 mins bro
+
 TSTART   | 6pm
-SUMMARY  | gym
 DURATION | for 90 mins
+SUMMARY  | gym
+SUMMARY  | bro
 events: all
 status: ok
 flags: duration_given missing_date
-
 === h4e089f6b27 [sarah] ===
 > Faculty Meeting every other Tuesday at 9am
-SUMMARY  | Faculty Meeting
+
 RECUR    | every other Tuesday
 TSTART   | 9am
+SUMMARY  | Faculty Meeting
 events: all
 status: ok
 flags: missing_end_time
-
 === h4fa7274366 [kylar] ===
 > gYm MWF 8-10 @ CS Bldg
-SUMMARY  | gYm
+
 RECUR    | MWF
 TSTART   | 8
 TEND     | 10
+SUMMARY  | gYm
 SUMMARY  | @ CS Bldg
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred
-
 === h4fddb83a63 [kylar] ===
 > gym mwf 8-10 until dec
-SUMMARY  | gym
+
 RECUR    | mwf
 TSTART   | 8
 TEND     | 10
 BOUND    | until dec
+SUMMARY  | gym
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred bounded_until
-
 === h50b8f05a66 [kara] ===
 > Fri set, Sun strike
+
 DATE     | Fri
-SUMMARY  | set
 DATE     | Sun
+SUMMARY  | set
 SUMMARY  | strike
 events: DATE#1 SUMMARY#1 ; DATE#2 SUMMARY#2
 status: ok
 flags: multi_event all_day recurrence_ambiguous
-
 === h514a3f8885 [kara] ===
 > The Landlord will schedule the roof inspection at some point this Quarter, tenants notified 48 hrs prior
+
+SUMMARY  | Landlord will schedule the roof inspection at some point this Quarter, tenants notified 48 hrs prior
 events: all
 status: unresolvable
 flags:
 note: "at some point this Quarter" pins nothing
-
 === h5345756f70 [kylar] ===
 > mEeTiNg with Prof in Room 201 MWF 8-10 dont be late please
-SUMMARY  | mEeTiNg
+
 PERSON   | Prof
-SUMMARY  | in Room 201
 RECUR    | MWF
 TSTART   | 8
 TEND     | 10
+SUMMARY  | mEeTiNg
+SUMMARY  | Room 201
+SUMMARY  | dont be late please
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred
-
 === h54521ea54b [kylar] ===
 > Gym 6 for 90m
-SUMMARY  | Gym
+
 TSTART   | 6
 DURATION | for 90m
+SUMMARY  | Gym
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred duration_given missing_date
-
 === h55a5212a70 [kylar] ===
 > BIWEEKLY GYM
+
 RECUR    | BIWEEKLY
 SUMMARY  | GYM
 events: all
 status: ok
 flags: all_day missing_date
 note: interval stated with no weekday -- FREQ=WEEKLY INTERVAL=2 with no BYDAY
-
 === h56406c98a8 [sam] ===
 > Leg day MW 6
-SUMMARY  | Leg day
+
 RECUR    | MW
 TSTART   | 6
+SUMMARY  | Leg day
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred missing_end_time
-
 === h56cbe5ab09 [sarah] ===
 > Gym at 6 for 90 mins leg day
-SUMMARY  | Gym
+
 TSTART   | 6
 DURATION | for 90 mins
+SUMMARY  | Gym
+SUMMARY  | leg day
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred duration_given missing_date
 note: "leg day" is a second title fragment after the duration; SUMMARY must be contiguous so it is untagged
-
 === h580426a867 [sarah] ===
 > Grocery run this Mon morning before work
-SUMMARY  | Grocery run
+
 DATE     | this Mon
 TSTART   | morning
+SUMMARY  | Grocery run
+SUMMARY  | before work
 events: all
 status: ok
 flags: relative_date time_approximate
 note: "before work" is a qualifier with no slot
-
 === h580b9511ee [sarah] ===
 > haircut every 2 weeks
-SUMMARY  | haircut
+
 RECUR    | every 2 weeks
+SUMMARY  | haircut
 events: all
 status: ok
 flags: all_day missing_date
-
 === h5908c641d1 [kylar] ===
 > GYM AT 6PM FOR 90 MINS BRO PLEASE DONT BE LATE OK!
-SUMMARY  | GYM
+
 TSTART   | 6PM
 DURATION | FOR 90 MINS
+SUMMARY  | GYM
+SUMMARY  | BRO PLEASE DONT BE LATE OK!
 events: all
 status: ok
 flags: duration_given missing_date
-
 === h592b1d402d [sam] ===
 > sat 2pm kIcks cleaning batch for 3 hrs
+
 DATE     | sat
 TSTART   | 2pm
-SUMMARY  | kIcks cleaning batch
 DURATION | for 3 hrs
+SUMMARY  | kIcks cleaning batch
 events: all
 status: ok
 flags: duration_given recurrence_ambiguous
-
 === h5a040e5773 [sebastian] ===
 > The Stranding Network puts you On Call for a rotation, you go when the pager goes, no set times
+
+SUMMARY  | Stranding Network puts you On Call for a rotation, you go when the pager goes, no set times
 events: all
 status: unrepresentable
 flags:
 note: on-call rotation triggered by an external event -- explicitly "no set times"
-
 === h5ab3f41dec [kylar] ===
 > Every other Tue 9am standup
+
 RECUR    | Every other Tue
 TSTART   | 9am
 SUMMARY  | standup
 events: all
 status: ok
 flags: missing_end_time
-
 === h5bd76c39b8 [kara] ===
 > AUGUST FROM THE FLOWER STALL IS TAKING OVER THE CORNER SPOT
+
+SUMMARY  | AUGUST FROM THE FLOWER STALL IS TAKING OVER THE CORNER SPOT
 events: all
 status: no_temporal
 flags: temporal_lookalike
 note: "AUGUST" is a person's name
-
 === h5bf835b8b0 [sam] ===
 > Guitar lesson with Sir JayR eVery sat 12NN sharp, dont be late again
-SUMMARY  | Guitar lesson
+
 PERSON   | Sir JayR
 RECUR    | eVery sat
 TSTART   | 12NN
+SUMMARY  | Guitar lesson
+SUMMARY  | sharp, dont be late again
 events: all
 status: ok
 flags: missing_end_time
-
 === h5d27720f13 [kylar] ===
 > Lab Mon12pm Wed5pm
-SUMMARY  | Lab
+
 RECUR    | Mon
 TSTART   | 12pm
 RECUR    | Wed
 TSTART   | 5pm
+SUMMARY  | Lab
 events: SUMMARY RECUR#1 TSTART#1 ; SUMMARY RECUR#2 TSTART#2
 status: ok
 flags: multi_event missing_end_time
 note: the canonical RFC 5545 case -- different times on different weekdays needs two VEVENTs
-
 === h5e47656420 [sarah] ===
 > class tth till finals
-SUMMARY  | class
+
 RECUR    | tth
 BOUND    | till finals
+SUMMARY  | class
 events: all
 status: ok
 flags: bounded_until all_day
-
 === h5e8aab60b3 [kara] ===
 > THE MONDAY VENDOR MEETING IS CANCELLED UNTIL FURTHER NOTICE
+
+SUMMARY  | MONDAY VENDOR MEETING IS CANCELLED UNTIL FURTHER NOTICE
 events: all
 status: no_temporal
 flags: temporal_lookalike
 note: cancellation -- removes a series rather than creating one
-
 === h5fb70cd08e [kylar] ===
 > Meeting with Sir Jefferson Monday 10am
-SUMMARY  | Meeting
+
 PERSON   | Sir Jefferson
 DATE     | Monday
 TSTART   | 10am
+SUMMARY  | Meeting
 events: all
 status: ok
 flags: missing_end_time recurrence_ambiguous
-
 === h5fbf466086 [sarah] ===
 > gym mwf until dec
-SUMMARY  | gym
+
 RECUR    | mwf
 BOUND    | until dec
+SUMMARY  | gym
 events: all
 status: ok
 flags: bounded_until all_day
-
 === h627a524af2 [sebastian] ===
 > Physical for the dive cert the week before Spring Break
+
+SUMMARY  | Physical for the dive cert the week before Spring Break
 events: all
 status: unrepresentable
 flags:
 note: offset from an institution-specific period ("the week before Spring Break") -- no anchor and no offset symbol
-
 === h62d2f2a2df [kara] ===
 > Wellness Exam for Ledger w/ Dr. Okafor on the 21st
-SUMMARY  | Wellness Exam for Ledger
+
 PERSON   | Dr. Okafor
 DATE     | on the 21st
+SUMMARY  | Wellness Exam for Ledger w/
 events: all
 status: ok
 flags: all_day
-
 === h641872d3d4 [kara] ===
 > the pallet Sat in the alley for 2 hrs before anyone flagged it
+
+SUMMARY  | pallet Sat in the alley for 2 hrs before anyone flagged it
 events: all
 status: no_temporal
 flags: temporal_lookalike
 note: "Sat" is a verb; "for 2 hrs" is a past duration
-
 === h6462c2009d [sarah] ===
 > MWF 8-10 until Dec
+
 RECUR    | MWF
 TSTART   | 8
 TEND     | 10
@@ -525,115 +547,121 @@ BOUND    | until Dec
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred bounded_until missing_summary
-
 === h65270ebf58 [sebastian] ===
 > Copy that, I'll Forward it to the rest of the cohort
+
+SUMMARY  | Copy that, I'll Forward it to the rest of the cohort
 events: all
 status: no_temporal
 flags:
 note: acknowledgement, no temporal lookalike token at all
-
 === h65a4d7e6a2 [kara] ===
 > HUDDLE M-F NOT WED
-SUMMARY  | HUDDLE
+
 RECUR    | M-F
 RECUR    | NOT WED
+SUMMARY  | HUDDLE
 events: all
 status: ok
 flags: negated_recurrence all_day
-
 === h65c6e1c6bc [sebastian] ===
 > okok im Dead thats so him
+
+SUMMARY  | okok im Dead thats so him
 events: all
 status: no_temporal
 flags:
-
 === h661b90e050 [sam] ===
 > fri 6 leg day w Bro Rome then badminton after, til 9 pm
+
 DATE     | fri
 TSTART   | 6
-SUMMARY  | leg day
 PERSON   | Bro Rome
 TEND     | 9 pm
+SUMMARY  | leg day
+SUMMARY  | then badminton after, til
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred recurrence_ambiguous
 note: "then badminton after" is a second activity in the same block; not split into a second event because it shares the time range
-
 === h66901e23b5 [sebastian] ===
 > nov 12 3pm thesis Check in w dr iversen
+
 DATE     | nov 12
 TSTART   | 3pm
-SUMMARY  | thesis Check in
 PERSON   | dr iversen
+SUMMARY  | thesis Check
 events: all
 status: ok
 flags: missing_end_time
-
 === h678c879fa3 [sebastian] ===
 > the nursery tank is full of fri Rn, like hundreds
+
+SUMMARY  | nursery tank is full of fri Rn, like hundreds
 events: all
 status: no_temporal
 flags: temporal_lookalike
 note: "fri" is a truncated word here, not Friday
-
 === h68aabf869e [sarah] ===
 > MTWThF except holidays 8AM Staff meeting at the conference room
+
 RECUR    | MTWThF
 RECUR    | except holidays
 TSTART   | 8AM
-SUMMARY  | Staff meeting
-SUMMARY  | at the conference room
+SUMMARY  | Staff meeting at the conference room
 events: all
 status: unrepresentable
 flags: negated_recurrence
 note: "except holidays" needs EXDATE against an external calendar -- spans are correct but L2 cannot express the exclusion
-
 === h69007b4f7b [kara] ===
 > Received, thanks — Looping in Nadine on this
+
+SUMMARY  | Received, thanks — Looping in Nadine on this
 events: all
 status: no_temporal
 flags:
-
 === h6a59fd9d06 [sebastian] ===
 > Heartworm Test for Chum w/ Dr. Amato on the 3rd
-SUMMARY  | Heartworm Test for Chum
+
 PERSON   | Dr. Amato
 DATE     | on the 3rd
+SUMMARY  | Heartworm Test for Chum w/
 events: all
 status: ok
 flags: all_day
-
 === h6cb0770e4c [kara] ===
 > they got wed at city hall last week, 2 witnesses only
+
+SUMMARY  | they got wed at city hall last week, 2 witnesses only
 events: all
 status: no_temporal
 flags: temporal_lookalike
 note: "wed" is a verb, "2" is a count, and the whole thing is in the past
-
 === h6e01e6b7c0 [kylar] ===
 > mwf 8-10 until dec bro
+
 RECUR    | mwf
 TSTART   | 8
 TEND     | 10
 BOUND    | until dec
+SUMMARY  | bro
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred bounded_until missing_summary
-
 === h6e8b8860cd [sebastian] ===
 > transect counts every spring low tide, so it Shifts like 50 min a day
+
+SUMMARY  | transect counts every spring low tide, so it Shifts like 50 min a day
 events: all
 status: unrepresentable
 flags:
 note: recurrence keyed to a tidal cycle that drifts ~50 min/day -- not a calendar rule
-
 === h6f7f3ff68a [sarah] ===
 > dentist tmrw
-SUMMARY  | dentist
+
+# end of batch
 DATE     | tmrw
+SUMMARY  | dentist
 events: all
 status: ok
 flags: relative_date all_day
-
-# end of batch
