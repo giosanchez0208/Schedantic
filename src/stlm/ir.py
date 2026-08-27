@@ -49,6 +49,8 @@ FLAGS = (
     "named_date",         # "christmas", "good friday" -- see holidays.py
     "named_date_unresolvable",  # lunar holiday; moves yearly, not guessed
     "recurrence_ambiguous",     # bare single weekday: one-off or weekly? See guide.
+    "offset_from_anchor",       # "the Monday after <named date>"
+    "excluded_dates",           # EXDATE emitted from the holiday table
 )
 
 WEEKDAYS = ("MO", "TU", "WE", "TH", "FR", "SA", "SU")
@@ -84,12 +86,22 @@ _EASTER_RE = re.compile(r"^REL:EASTER[+-]\d{1,3}$")
 _NTH_RE = re.compile(r"^REL:NTH_(-1|[1-5])_[0-6]_(1[0-2]|[1-9])$")
 
 
+# Composed dates: an OFFSET applied to an ANCHOR, joined by "@". Resolution
+# recurses -- resolve the anchor first, then step from it.
+#   REL:NEXT_MO@REL:MD_11_2    "the Monday after All Souls Day"
+#   REL:-7D@REL:MD_12_25       "the week before Christmas"
+_OFFSET_RE = re.compile(r"^REL:(NEXT_(?:MO|TU|WE|TH|FR|SA|SU)|[+-]\d{1,3}D)@(.+)$")
+
+
 def is_valid_date_symbol(sym: str) -> bool:
     """A symbolic date is one of the enumerated ones, an ABS:, or a computed form."""
     if sym.startswith("ABS:"):
         return True
     if sym in REL_SYMBOLS:
         return True
+    m = _OFFSET_RE.match(sym)
+    if m:
+        return is_valid_date_symbol(m.group(2))
     return bool(_EASTER_RE.match(sym) or _NTH_RE.match(sym))
 
 
@@ -233,9 +245,16 @@ class L2Event:
     rrule: RRule | None = None
     attendees: list[str] = field(default_factory=list)
     location: str | None = None
+    # Symbolic exclusions -- "HOLIDAYS" rather than a date list, so the set stays
+    # resolvable against a reference time and gold does not expire. L3 expands
+    # these into RFC 5545 EXDATE entries over the series horizon.
+    exclude: list[str] = field(default_factory=list)
 
     def validate(self) -> list[str]:
         errs = list(self.dtstart.validate())
+        for x in self.exclude:
+            if x not in ("HOLIDAYS",):
+                errs.append(f"unknown exclusion {x!r}")
         if self.dtend:
             errs.extend(self.dtend.validate())
         if self.rrule:
@@ -284,6 +303,7 @@ class L2:
                     rrule=RRule(**e["rrule"]) if e.get("rrule") else None,
                     attendees=list(e.get("attendees", [])),
                     location=e.get("location"),
+                    exclude=list(e.get("exclude", [])),
                 )
             )
         return L2(

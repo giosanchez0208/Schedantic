@@ -262,18 +262,18 @@ def test_normalizer():
 
     for text, want in [("MWF", ["MO", "WE", "FR"]), ("TTh", ["TU", "TH"]),
                        ("TR", ["TU", "TH"]), ("MW", ["MO", "WE"])]:
-        rr, _ = normalize_recur([text])
+        rr, _, _x = normalize_recur([text])
         check(f"recur {text!r} -> {want}", rr and rr.byday == want,
               str(rr.byday if rr else None))
 
     # Redundant spans must merge, not conflict -- this is the case the
     # annotation guide decides in favour of tagging both.
-    rr, _ = normalize_recur(["Biweekly", "every other Tuesday"])
+    rr, _, _x = normalize_recur(["Biweekly", "every other Tuesday"])
     check("redundant RECUR spans merge to interval=2 byday=[TU]",
           rr and rr.interval == 2 and rr.byday == ["TU"],
           f"{rr.interval if rr else None} {rr.byday if rr else None}")
 
-    rr, _ = normalize_recur(["every day", "except Sunday"])
+    rr, _, _x = normalize_recur(["every day", "except Sunday"])
     check("negation subtracts from the base set",
           rr and "SU" not in rr.byday and len(rr.byday) == 6, str(rr.byday if rr else None))
 

@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from dateutil import rrule as du
 
 from . import holidays as hol
-from .ir import L2, L2Event, RRule
+from .ir import _OFFSET_RE, L2, L2Event, RRule
 
 WEEKDAY_INDEX = {"MO": 0, "TU": 1, "WE": 2, "TH": 3, "FR": 4, "SA": 5, "SU": 6}
 DU_WEEKDAY = {
@@ -72,6 +72,18 @@ def resolve_date(symbol: str, ref: dt.datetime, rule: RRule | None = None,
         return ref.date() + dt.timedelta(days=1)
     if symbol == "REL:DAY_AFTER_TOMORROW":
         return ref.date() + dt.timedelta(days=2)
+    m = _OFFSET_RE.match(symbol)
+    if m:
+        # Composed date: resolve the ANCHOR first, then step from it. This is
+        # what makes "the Monday after All Souls Day" work -- the parser becomes
+        # its own sub-parser rather than needing a symbol per holiday-offset pair.
+        op, anchor_sym = m.group(1), m.group(2)
+        anchor = resolve_date(anchor_sym, ref, rule, policy)
+        if op.startswith("NEXT_"):
+            wd = WEEKDAY_INDEX[op[len("NEXT_"):]]
+            # Strictly after: "the Monday after" a Monday is the following week.
+            return anchor + dt.timedelta(days=(wd - anchor.weekday()) % 7 or 7)
+        return anchor + dt.timedelta(days=int(op[:-1]))
     if symbol.startswith("REL:EASTER"):
         off = int(symbol[len("REL:EASTER"):])
         d = hol.easter(ref.year) + dt.timedelta(days=off)
@@ -215,7 +227,8 @@ def rrule_to_jcal(rule: RRule, ref: dt.datetime | None = None,
 
 
 def l2_to_jcal(l2: L2, ref: dt.datetime, tzid: str | None = None,
-               policy: Policy = DEFAULT_POLICY, prodid: str = "-//Gio//STLM//EN") -> list:
+               policy: Policy = DEFAULT_POLICY, prodid: str = "-//Gio//STLM//EN",
+               exdate_horizon_days: int = 365) -> list:
     """Emit an RFC 7265 jCal vcalendar. Deterministic given (l2, ref, tzid)."""
     props = [["version", {}, "text", "2.0"], ["prodid", {}, "text", prodid]]
     comps = []
@@ -242,6 +255,18 @@ def l2_to_jcal(l2: L2, ref: dt.datetime, tzid: str | None = None,
             eprops.append(["attendee", {"cn": a}, "cal-address", f"mailto:{_slug(a)}@invalid"])
         if ev.rrule:
             eprops.append(["rrule", {}, "recur", rrule_to_jcal(ev.rrule, ref, policy)])
+        if ev.exclude and ev.rrule:
+            # "MTWThF except holidays" becomes a real EXDATE list, expanded from
+            # the offline holiday table over the series horizon. Approximate by
+            # construction: the table has no lunar holidays, and the writer may
+            # not have meant national holidays. Flagged, not presented as exact.
+            occ = occurrences(ev, ref, exdate_horizon_days, policy)
+            if occ:
+                hol_days = set(hol.dates_between(occ[0].date(), occ[-1].date()))
+                skipped = [o for o in occ if o.date() in hol_days]
+                if skipped:
+                    eprops.append(["exdate", dict(params), vtype,
+                                   *[fmt(x) for x in skipped]])
         comps.append(["vevent", eprops, []])
     return ["vcalendar", props, comps]
 

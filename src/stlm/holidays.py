@@ -183,3 +183,41 @@ def nth_weekday(year: int, month: int, weekday: int, n: int) -> dt.date:
     first = dt.date(year, month, 1)
     offset = (weekday - first.weekday()) % 7
     return first + dt.timedelta(days=offset + 7 * (n - 1))
+
+
+# --- EXDATE support ----------------------------------------------------------
+
+def dates_between(start: dt.date, end: dt.date,
+                  locales: tuple[str, ...] = (PH, INTL)) -> list[dt.date]:
+    """Every known holiday falling in [start, end].
+
+    This is what turns "MTWThF except holidays" from unrepresentable into an
+    RFC 5545 EXDATE list. It is only as good as the table: lunar holidays are
+    absent, and "holidays" may not mean national holidays to the writer. Callers
+    should flag the result as approximate rather than presenting it as complete.
+    """
+    out: list[dt.date] = []
+    for year in range(start.year, end.year + 1):
+        for key, (sym, loc) in FIXED.items():
+            if loc not in locales:
+                continue
+            m, d = (int(x) for x in sym[len("REL:MD_"):].split("_"))
+            try:
+                cand = dt.date(year, m, d)
+            except ValueError:
+                continue
+            if start <= cand <= end:
+                out.append(cand)
+        for key, (off, loc) in EASTER_RELATIVE.items():
+            if loc not in locales:
+                continue
+            cand = easter(year) + dt.timedelta(days=off)
+            if start <= cand <= end:
+                out.append(cand)
+        for key, (n, wd, month, loc) in NTH_WEEKDAY.items():
+            if loc not in locales:
+                continue
+            cand = nth_weekday(year, month, wd, n)
+            if start <= cand <= end:
+                out.append(cand)
+    return sorted(set(out))

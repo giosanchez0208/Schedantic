@@ -196,7 +196,7 @@ _INTERVAL_WORDS = {
     "other": 2, "second": 2, "two": 2, "2": 2, "biweekly": 2, "bi-weekly": 2,
     "fortnightly": 2, "alt": 2, "third": 3, "three": 3, "3": 3,
 }
-_NEG = re.compile(r"^(?:except|exc|excluding|but\s+not|minus|xcpt|no)\s*(?:on\s+)?(.*)$", re.I)
+_NEG = re.compile(r"^(?:except|exc|excluding|but\s+not|not|minus|xcpt|no)\s*(?:on\s+)?(.*)$", re.I)
 
 
 def _daycodes(text: str) -> list[str]:
@@ -208,31 +208,45 @@ def _daycodes(text: str) -> list[str]:
     word = _DAY_ABBR.get(text.strip().lower())
     if word:
         return [word]
-    # "MWF", "TThS" style clusters, longest-token-first so Th beats T.
-    out, i = [], 0
-    s = text.strip()
+    # Tokenise the string as a day-code cluster, longest form first. Any
+    # ALPHABETIC character that cannot be consumed as a day token means this is
+    # not a day code at all, and the whole string is rejected.
+    #
+    # That strictness is load-bearing: without it "holidays" parses as Th + junk
+    # and "MTWThF except holidays" silently drops Thursday from the schedule.
+    # Skipping unrecognised letters rather than rejecting is the bug.
+    FULL = {"monday": "MO", "tuesday": "TU", "wednesday": "WE", "thursday": "TH",
+            "friday": "FR", "saturday": "SA", "sunday": "SU"}
     THREE = {"mon": "MO", "tue": "TU", "wed": "WE", "thu": "TH",
              "fri": "FR", "sat": "SA", "sun": "SU"}
+    TWO = {"th": "TH", "tu": "TU", "sa": "SA", "su": "SU",
+           "mo": "MO", "we": "WE", "fr": "FR"}
+    ONE = {"M": "MO", "T": "TU", "W": "WE", "R": "TH", "H": "TH",
+           "F": "FR", "S": "SA", "U": "SU"}
+
+    s = text.strip()
+    out, i = [], 0
     while i < len(s):
-        # Three-letter abbreviations first. Without this, "MonThu" letter-parses
-        # as M + Th + u and the trailing u becomes Sunday.
-        three = s[i : i + 3].lower()
-        if three in THREE:
-            out.append(THREE[three])
-            i += 3
+        if not s[i].isalpha():
+            i += 1                      # separators are free
             continue
-        two = s[i : i + 2].lower()
-        if two in ("th", "tu", "sa", "su", "mo", "we", "fr"):
-            out.append({"th": "TH", "tu": "TU", "sa": "SA", "su": "SU",
-                        "mo": "MO", "we": "WE", "fr": "FR"}[two])
-            i += 2
-            continue
-        one = s[i].upper()
-        mapped = {"M": "MO", "T": "TU", "W": "WE", "R": "TH", "H": "TH",
-                  "F": "FR", "S": "SA", "U": "SU"}.get(one)
-        if mapped:
+        for width, table in ((9, FULL), (3, THREE), (2, TWO)):
+            for w in range(min(width, len(s) - i), 1, -1):
+                tok = s[i : i + w].lower()
+                if tok in table:
+                    out.append(table[tok])
+                    i += w
+                    break
+            else:
+                continue
+            break
+        else:
+            mapped = ONE.get(s[i].upper())
+            if mapped is None:
+                return []               # an alphabetic char that is not a day
+                                        # token -- this is an ordinary word
             out.append(mapped)
-        i += 1
+            i += 1
     seen = []
     for d in out:
         if d not in seen:
@@ -240,7 +254,7 @@ def _daycodes(text: str) -> list[str]:
     return seen
 
 
-def normalize_recur(texts: list[str]) -> tuple[RRule | None, set[str]]:
+def normalize_recur(texts: list[str]) -> tuple[RRule | None, set[str], list[str]]:
     """Merge every RECUR span into one rule.
 
     Multiple spans are normal and expected -- "Biweekly ... every other Tuesday"
@@ -251,6 +265,7 @@ def normalize_recur(texts: list[str]) -> tuple[RRule | None, set[str]]:
     flags: set[str] = set()
     byday: list[str] = []
     excluded: list[str] = []
+    exclusions: list[str] = []
     interval = 1
     freq = None
 
@@ -261,9 +276,17 @@ def normalize_recur(texts: list[str]) -> tuple[RRule | None, set[str]]:
         neg = _NEG.match(low)
         if neg:
             flags.add("negated_recurrence")
-            for d in _daycodes(neg.group(1)):
-                if d not in excluded:
-                    excluded.append(d)
+            days = _daycodes(neg.group(1))
+            if days:
+                for d in days:
+                    if d not in excluded:
+                        excluded.append(d)
+            elif re.search(r"\bholidays?\b", neg.group(1)):
+                # "except holidays" is not a weekday subtraction -- it is an
+                # EXDATE against a calendar. Kept symbolic; L3 expands it.
+                if "HOLIDAYS" not in exclusions:
+                    exclusions.append("HOLIDAYS")
+                flags.add("excluded_dates")
             continue
 
         for word, iv in _INTERVAL_WORDS.items():
@@ -295,11 +318,11 @@ def normalize_recur(texts: list[str]) -> tuple[RRule | None, set[str]]:
         freq = "WEEKLY"
 
     if not byday and freq is None:
-        return None, flags
+        return None, flags, exclusions
     if byday:
         freq = "WEEKLY"
     byday.sort(key=WEEKDAYS.index)
-    return RRule(freq=freq or "WEEKLY", interval=interval, byday=byday), flags
+    return RRule(freq=freq or "WEEKLY", interval=interval, byday=byday), flags, exclusions
 
 
 # --- bound (UNTIL date or COUNT) ---------------------------------------------
@@ -361,7 +384,7 @@ def l1_to_l2(l1: L1, policy: Policy = DEFAULT_POLICY) -> tuple[L2, Trace]:
         spans = [by_i[i] for i in group if i in by_i]
         pick = lambda t: [s.text for s in spans if s.type == t]  # noqa: E731
 
-        rrule, rflags = normalize_recur(pick("RECUR"))
+        rrule, rflags, exclusions = normalize_recur(pick("RECUR"))
         all_flags |= rflags
 
         tstarts = pick("TSTART")
@@ -414,7 +437,11 @@ def l1_to_l2(l1: L1, policy: Policy = DEFAULT_POLICY) -> tuple[L2, Trace]:
 
         summary_parts = pick("SUMMARY")
         persons = pick("PERSON")
-        summary = " ".join(summary_parts).strip() or None
+        # Two title fragments split by a temporal span ("Mom's birthday Oct 21
+        # dinner") are tagged as two SUMMARY spans and rejoined with a comma.
+        # No discontinuous-span machinery needed -- repeated span types are
+        # already legal, the same way RECUR repeats.
+        summary = ", ".join(p.strip() for p in summary_parts if p.strip()) or None
         if summary and persons:
             summary = f"{summary} with {persons[0]}"
         elif summary is None and persons:
@@ -432,6 +459,7 @@ def l1_to_l2(l1: L1, policy: Policy = DEFAULT_POLICY) -> tuple[L2, Trace]:
             rrule=rrule,
             attendees=list(persons),
             location=(pick("LOCATION") or [None])[0],
+            exclude=exclusions,
         ))
 
     if len(events) > 1:

@@ -127,6 +127,11 @@ LOCATION_RE = re.compile(
     re.I,
 )
 
+# "not"/"no" are weak negation triggers -- far too common to match freely
+# ("do not forget"), so they only count when a weekday follows immediately.
+NEGATION_WEAK_RE = re.compile(
+    r"\b((?:not|no)\s+(?:mon|tue|tues|wed|weds|thu|thur|thurs|fri|sat|sun)[a-z]*)\b", re.I)
+
 NEGATION_RE = re.compile(
     r"\b((?:except|exc|excluding|but\s+not|minus|xcpt)\s*"
     r"(?:on\s+)?[A-Za-z\s]{0,20}?(?=\s*$|\s*\d|\s+\b(?:at|in|with|w/|room|rm|and)\b))",
@@ -173,6 +178,8 @@ def propose(text: str) -> list[Proposal]:
         _add(out, "DURATION", m, "duration", 1)
     for m in NEGATION_RE.finditer(text):
         _add(out, "RECUR", m, "negation", 1)
+    for m in NEGATION_WEAK_RE.finditer(text):
+        _add(out, "RECUR", m, "negation_weak", 1)
     for m in EVERY_RE.finditer(text):
         _add(out, "RECUR", m, "every", 1)
     for m in DAY_RE.finditer(text):
