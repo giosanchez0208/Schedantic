@@ -130,3 +130,79 @@ def round_trip_ok(l1: L1) -> bool:
     want = [(s.type, s.start, s.end) for s in l1.spans
             if l1.text[s.start:s.end].strip()]
     return [(s.type, s.start, s.end) for s in got] == want
+
+
+def chunks(text: str) -> list[tuple[int, int]]:
+    """Character-space chunks a span boundary is allowed to fall on.
+
+    A maximal run of letters, or of digits, or a single other character. The
+    letter/digit split is what lets "Mon12pm" separate into "Mon" and "12pm"
+    without a space -- 8 of the 1188 gold spans need exactly that, and 99.3% of
+    the rest already land on whitespace.
+    """
+    out: list[tuple[int, int]] = []
+    i = 0
+    while i < len(text):
+        ch = text[i]
+        if ch.isalpha():
+            j = i
+            while j < len(text) and text[j].isalpha():
+                j += 1
+        elif ch.isdigit():
+            j = i
+            while j < len(text) and text[j].isdigit():
+                j += 1
+        else:
+            j = i + 1
+        out.append((i, j))
+        i = j
+    return out
+
+
+def decode_chunked(text: str, probs) -> list[Span]:
+    """Decode per CHUNK instead of per byte, using the full probability matrix.
+
+    Byte-level argmax has nothing forcing a span to be contiguous. In
+    distribution the model learns coherence anyway; off distribution it falls
+    apart into alternating labels inside one word -- "every other sunday"
+    decoding as RECUR/SUMMARY/RECUR/SUMMARY letter by letter. That is not a
+    training-time problem, it is a missing constraint at decode time.
+
+    So every byte of a chunk votes, the chunk takes one label, and the B-vs-I
+    call is left to the model: it is the only part of the decision the model is
+    actually good at, and forcing adjacent same-type chunks to merge would fuse
+    "Mon" and "Wed" into one span.
+
+    probs: (n_bytes, N_LABELS), rows summing to 1.
+    """
+    c2b = char_to_byte_offsets(text)
+    n = len(probs)
+    chosen: list[tuple[int, int, str, bool]] = []
+
+    for c0, c1 in chunks(text):
+        b0, b1 = c2b[c0], min(c2b[c1], n)
+        if b1 <= b0 or not text[c0:c1].strip():
+            continue
+        score: dict[str, float] = {}
+        for lab, idx in LABEL2ID.items():
+            typ = "O" if lab == "O" else lab.split("-", 1)[1]
+            score[typ] = score.get(typ, 0.0) + sum(
+                float(probs[k][idx]) for k in range(b0, b1))
+        best = max(score, key=score.get)
+        if best == "O":
+            continue
+        b_id, i_id = LABEL2ID[f"B-{best}"], LABEL2ID[f"I-{best}"]
+        opens = float(probs[b0][b_id]) >= float(probs[b0][i_id])
+        chosen.append((c0, c1, best, opens))
+
+    spans: list[Span] = []
+    for c0, c1, typ, opens in chosen:
+        merge = (spans and not opens and spans[-1].type == typ
+                 and not text[spans[-1].end:c0].strip())
+        if merge:
+            spans[-1] = Span(i=spans[-1].i, type=typ, start=spans[-1].start,
+                             end=c1, text=text[spans[-1].start:c1])
+        else:
+            spans.append(Span(i=len(spans), type=typ, start=c0, end=c1,
+                              text=text[c0:c1]))
+    return spans

@@ -18,7 +18,7 @@ from .convert import DEFAULT_POLICY, Policy, l2_to_jcal, occurrence_set
 from .ir import L1, L2, Span
 from .normalize import l1_to_l2
 from .segment import groups_for_spans
-from .tagging import BOS, EOS, ID2LABEL, ID2STATUS, decode
+from .tagging import BOS, EOS, ID2LABEL, ID2STATUS, decode, decode_chunked
 
 
 @dataclass
@@ -44,7 +44,8 @@ class Run:
 @torch.no_grad()
 def run(model, text: str, ref: dt.datetime | None = None,
         policy: Policy = DEFAULT_POLICY, horizon_days: int = 28,
-        max_len: int = 192, device: str = "cpu") -> Run:
+        max_len: int = 192, device: str = "cpu",
+        chunked: bool = True) -> Run:
     model.eval()
     ref = ref or dt.datetime.now().replace(second=0, microsecond=0)
 
@@ -65,7 +66,11 @@ def run(model, text: str, ref: dt.datetime | None = None,
     r = Run(text=text, n_bytes=len(raw), status=status, status_probs=probs,
             byte_labels=labels, byte_conf=conf)
 
-    r.spans = decode(text, tag_ids)
+    # Chunk-level decoding by default; byte argmax has no contiguity constraint
+    # and shatters spans mid-word on unfamiliar text. chunked=False keeps the
+    # raw behaviour so the difference stays measurable.
+    r.spans = (decode_chunked(text, tag_prob.tolist()) if chunked
+               else decode(text, tag_ids))
     # Mean confidence over the bytes a span covers, so a span the model was
     # unsure about is visibly unsure rather than blending into the rest.
     c2b = [0]
