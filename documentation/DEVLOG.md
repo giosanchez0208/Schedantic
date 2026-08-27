@@ -157,3 +157,34 @@ RRULE is three items off target now. Zero false splits matters more to me than t
 Last thing, and it's the annoying one. My `check()` helper appends to a list and prints; it never raises. Running under pytest, that meant every failing check was invisible and the suite reported "12 passed" while I was actively changing behavior underneath it. Only caught it because I expected a test to break and it didn't. Added the assertion that actually fails the run.
 
 TLDR: a test that can't fail isn't a test, it's a print statement. Same shape as the gold problem last phase &mdash; both times the measuring instrument was quietly agreeing with whatever I did.
+
+### Phase 10: The test set, and the number I didn't want
+
+Annotated all 98 test strings myself. I'd been arguing against this on the grounds that derived gold isn't a measurement, and the counter-argument won: a human annotating would be applying the same three rules from the same guide, and the point of the labels is to teach those rules. So the honest framing isn't "don't do it," it's "say what it is." This measures the parser against *my* judgment, not against a second person. Written into the commit so nobody reads it as more than that.
+
+What I did keep is the part that actually mattered: I never looked at a parser proposal. Read the line, decide the spans, move on. Offsets are resolved by forward scan from the span texts, and every flag that's a pure function of the span set gets cross-checked against what I wrote by hand instead of overwriting it. That check caught exactly one slip in 98, which is about the rate I'd expect and the reason to run it.
+
+Settled a handful of judgment calls against dev precedent rather than inventing them: time-of-day words are TSTART only when there's no clock time (`every tues night at 9PM` puts `night` in the summary), month-day takes no `on` prefix but ordinals do, a count bound promotes a bare weekday from DATE to RECUR. Found one stale dev row while I was at it &mdash; `the Monday after All Souls Day` was marked unrepresentable while three identical-shaped rows were fine, and that exact phrase is the worked example in the IR's own comment.
+
+Then the numbers.
+
+| | dev | test |
+|---|---|---|
+| status accuracy | 0.793 | 0.796 |
+| false-schedule | 1.000 | 1.000 |
+| SUMMARY F1 | 0.659 | **0.559** |
+| event count | 1.000 | **0.910** |
+| temporal exact | 0.857 | **0.564** |
+| RRULE equivalent | 0.894 | 0.718 |
+
+Temporal exact drops 29 points. My first instinct was that I'd annotated test wrong.
+
+I hadn't. It's one construction. Bryan writes `8am gym 9am` &mdash; start time, title, end time, no dash, no `to`, nothing. The parser reads the second time as another start. Nineteen of 78 schedulable test items are shaped like that, and temporal exact on those nineteen is **0.000**. Not low. Zero. Six of the seven event-count misses are the same bug downstream: a second TSTART with a day between them looks exactly like the multi-event pattern I just built, so it splits one event in half. Take those nineteen out and test goes 0.564 → 0.746.
+
+The construction appears in zero dev rows and zero harvested strings. Every other instance of two times in one line has a connector &mdash; `to`, `until`, `through`, an en dash. So it's one person's house style that the parser had never once seen, and it took the whole thing down 29 points.
+
+That is exactly the Geva et al. result, reproduced by accident on 98 strings. Held-out annotators aren't a formality. I built the split that way months of reasoning ago because a paper said to, and it just paid for itself.
+
+And now the discipline problem: I know how to fix it in about ten minutes, and I'm not going to. Fixing a parser against the held-out set is how a test set stops being one. Same for the three other defects I found while poking at it &mdash; a greedy `NO ...` negation that eats the rest of the line, `next weds` not resolving, and `the tues after Halloween` silently flattening to Halloween itself, which is a silent catastrophic error by my own definition. All four are written up in FINDINGS.md under a heading that says don't fix these without re-splitting.
+
+TLDR: the split did its job, which is to embarrass me. A number that only exists because the parser was built next to the data isn't a number.
