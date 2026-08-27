@@ -19,6 +19,7 @@ import string
 from dataclasses import dataclass, field
 
 from . import daysets as ds
+from . import negatives as neg
 from . import lexicon as lx
 from .ir import L1, L2, DateTimeSpec, L2Event, RRule, Span
 
@@ -615,28 +616,48 @@ def generate_one(rng: random.Random, idx: int, cell: dict | None = None,
 
 
 def generate_negative(rng: random.Random, idx: int) -> tuple[L1, L2, dict]:
-    """no_temporal examples, including the high-value temporal_lookalike class."""
-    lookalike = rng.random() < 0.6
-    text = rng.choice(lx.LOOKALIKE_TEMPLATES if lookalike else lx.NO_TEMPORAL_TEMPLATES)
-    casing = rng.choice(["lower", "title", "mixed"])
+    """A NOT-A-SCHEDULE example, sampled compositionally from negatives.py.
+
+    Was a pick from 25 hand-written strings, which gave 24 distinct negatives no
+    matter how many rows were generated. Now the FRAME is sampled -- the reason
+    the string is not a schedule -- and filled from slot vocabularies, the same
+    meaning-first discipline used for positives.
+    """
+    text, frame, flags = neg.sample(rng)
+    casing = rng.choice(["lower", "title", "mixed", "upper"])
     text = apply_casing(rng, text, casing)
-    flags = ["temporal_lookalike"] if lookalike else []
+    if rng.random() < 0.10:
+        text = typo(rng, text)
+
     cell = {k: "n/a" for k in AXES}
     cell["recurrence_class"] = "none"
     cell["register"] = "informal"
     cell["casing"] = casing
-    l1 = L1(id=f"neg{idx:06d}", text=text, spans=[], event_groups=[],
-            status="no_temporal", flags=flags)
-    l2 = L2(id=f"neg{idx:06d}", events=[], status="no_temporal", flags=flags)
+    cell["negative_frame"] = frame
+
+    # Non-temporal text is still the title -- see OQ-14. A rejected string keeps
+    # its words so a UI can show what it declined to schedule.
+    spans = [Span(i=0, type="SUMMARY", start=0, end=len(text), text=text)]
+    l1 = L1(id=f"neg{idx:06d}", text=text, spans=spans, event_groups=[],
+            status="no_temporal", flags=sorted(flags))
+    l2 = L2(id=f"neg{idx:06d}", events=[], status="no_temporal", flags=sorted(flags))
     return l1, l2, cell
 
 
-def generate(n: int, seed: int = 1337, negative_frac: float = 0.08,
+# Negatives follow the same balanced-vs-realistic split as the axes. The measured
+# rate in the human corpus is 13.6% (42 no_temporal of 309). Training Q1 wants
+# more than that; calibration wants the real figure.
+NEGATIVE_FRAC = {"balanced": 0.25, "realistic": 0.136}
+
+
+def generate(n: int, seed: int = 1337, negative_frac: float | None = None,
              profile: str = "balanced") -> list[dict]:
     """profile: "balanced" (uniform axes, for class coverage) or
     "realistic" (AXIS_PRIOR, for distribution calibration). See AXIS_PRIOR."""
     rng = random.Random(seed)
     rows = []
+    if negative_frac is None:
+        negative_frac = NEGATIVE_FRAC.get(profile, 0.136)
     n_neg = int(n * negative_frac)
     for i in range(n - n_neg):
         l1, l2, cell = generate_one(rng, i, profile=profile)

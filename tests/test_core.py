@@ -310,6 +310,47 @@ def test_known_baseline_gap():
               l2.events[0].rrule.byday == ["MO", "WE"], str(l2.events[0].rrule.byday))
 
 
+def test_negative_frames():
+    print("\n[Q1] negative frame generator")
+    import random as _r
+    import re as _re
+    from stlm import negatives as ng
+    from stlm.normalize import parse as _parse
+
+    rng = _r.Random(1)
+    seen = {_re.sub(r"[^a-z0-9]", "", ng.sample(rng)[0].lower()) for _ in range(20000)}
+    check(f"20k draws yield >=5000 distinct negatives (got {len(seen)})",
+          len(seen) >= 5000, "the whole point is that a list of 25 does not scale")
+
+    rng = _r.Random(2)
+    frames = {ng.sample(rng)[1] for _ in range(2000)}
+    check(f"all {len(ng.frame_ids())} frames are reachable",
+          frames == set(ng.frame_ids()), f"missing {set(ng.frame_ids()) - frames}")
+
+    # A negative that the rule parser trivially rejects teaches nothing. Real
+    # human negatives fool it 100% of the time; generated ones must be as hard.
+    rng = _r.Random(3)
+    gen = [ng.sample(rng)[0] for _ in range(300)]
+    fooled = sum(1 for t in gen if _parse(t)[0].events)
+    check(f"generated negatives are hard: {fooled}/300 fool the rule parser",
+          fooled >= 270, "too easy -- they would not teach the schedulable judgement")
+
+    # No placeholder may survive into the text.
+    check("no unfilled {SLOT} placeholders", not any("{" in t for t in gen),
+          str([t for t in gen if "{" in t][:2]))
+
+    rows = generate(3000, seed=5, profile="balanced")
+    negs = [r for r in rows if r["l1"]["status"] != "ok"]
+    check("negatives carry status=no_temporal and no event_groups",
+          all(r["l1"]["status"] == "no_temporal" and not r["l1"]["event_groups"]
+              for r in negs), "status/groups wrong")
+    check("negatives keep their text as a SUMMARY span (OQ-14)",
+          all(any(s["type"] == "SUMMARY" for s in r["l1"]["spans"]) for r in negs),
+          "a rejected string should still show what was declined")
+    check("all generated negatives validate",
+          not any(L1.from_json(r["l1"]).validate() for r in negs), "invalid L1")
+
+
 def test_daysets():
     print("\n[augment] weekday-set rendering round-trips")
     import random as _r
@@ -403,6 +444,7 @@ if __name__ == "__main__":
     test_generator_integrity()
     test_normalizer()
     test_known_baseline_gap()
+    test_negative_frames()
     test_daysets()
     test_holidays()
     print("\n" + "=" * 60)
