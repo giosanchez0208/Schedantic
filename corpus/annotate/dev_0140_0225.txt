@@ -1,0 +1,805 @@
+# L1 ANNOTATION -- split=dev  items=85
+# annotator: claude (DEV ONLY -- test set stays human-annotated)
+# Annotated from raw text without consulting preannotate.py output.
+# Round-1 decisions applied: bare single weekday -> DATE + recurrence_ambiguous;
+# time-of-day word next to a bare hour sets the meridiem; "every Nth <day>" is
+# INTERVAL=N, "Nth <day> of the month" is monthly ordinal.
+
+=== h6f9fdd1b1a [sarah] ===
+> MTWTHF 7AM MASS AT THE CHAPEL
+RECUR    | MTWTHF
+TSTART   | 7AM
+SUMMARY  | MASS
+LOCATION | AT THE CHAPEL
+events: all
+status: ok
+flags: missing_end_time
+
+=== h6fc3d196f4 [sarah] ===
+> mwf gym x12 starting next week
+RECUR    | mwf
+SUMMARY  | gym
+BOUND    | x12
+DATE     | next week
+events: all
+status: ok
+flags: bounded_count all_day relative_date recur_with_anchor
+
+=== h71db731afc [sam] ===
+> TTh sideline bookkeeping n bills, 9pm when mOm is already asleep
+RECUR    | TTh
+SUMMARY  | sideline bookkeeping n bills
+TSTART   | 9pm
+events: all
+status: ok
+flags: missing_end_time
+note: "when mOm is already asleep" is a rationale, not a condition on the schedule
+
+=== h728bd3bf3c [sarah] ===
+> consultation with dr cruz on the 15th
+SUMMARY  | consultation
+PERSON   | dr cruz
+DATE     | on the 15th
+events: all
+status: ok
+flags: all_day
+
+=== h7333eec9e2 [sarah] ===
+> Dentist appointment Sept 3 at 2pm
+SUMMARY  | Dentist appointment
+DATE     | Sept 3
+TSTART   | 2pm
+events: all
+status: ok
+flags: missing_end_time
+
+=== h737ad0fab2 [sam] ===
+> sat 9 kobe checkup + deworming til 11:30 at doc mirasol
+DATE     | sat
+TSTART   | 9
+SUMMARY  | kobe checkup + deworming
+TEND     | 11:30
+PERSON   | doc mirasol
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred recurrence_ambiguous
+
+=== h75519e6a05 [kara] ===
+> the knitting circle intake session is this coming tues
+SUMMARY  | the knitting circle intake session
+DATE     | this coming tues
+events: all
+status: ok
+flags: relative_date all_day
+
+=== h760eb486a2 [sarah] ===
+> Daily except Sunday Mass intentions
+RECUR    | Daily
+RECUR    | except Sunday
+SUMMARY  | Mass intentions
+events: all
+status: ok
+flags: negated_recurrence all_day
+
+=== h763020c39f [sebastian] ===
+> tmrw i got the reef tank job across town, gotta be there by 9
+DATE     | tmrw
+SUMMARY  | the reef tank job across town
+TSTART   | 9
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred relative_date missing_end_time
+note: "gotta be there by 9" is a deadline phrasing read as the start time
+
+=== h78638fcea1 [sarah] ===
+> 12nn lunch w the girls
+TSTART   | 12nn
+SUMMARY  | lunch
+PERSON   | the girls
+events: all
+status: ok
+flags: missing_date missing_end_time
+
+=== h78e7be34ef [kara] ===
+> TR 6 spin class Downtown til 7
+RECUR    | TR
+TSTART   | 6
+SUMMARY  | spin class
+LOCATION | Downtown
+TEND     | 7
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred
+
+=== h7918f56b3e [sarah] ===
+> Seminar 8 to 12 at the main hall
+SUMMARY  | Seminar
+TSTART   | 8
+TEND     | 12
+LOCATION | at the main hall
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred missing_date
+
+=== h79320dfb1c [sam] ===
+> Cook duty aLt wks
+SUMMARY  | Cook duty
+RECUR    | aLt wks
+events: all
+status: ok
+flags: all_day missing_date
+note: interval stated with no weekday -- INTERVAL=2 with no BYDAY
+
+=== h7a136ca1a7 [sarah] ===
+> 5PM merienda
+TSTART   | 5PM
+SUMMARY  | merienda
+events: all
+status: ok
+flags: missing_date missing_end_time
+
+=== h7b6556715a [sebastian] ===
+> tank checks are off tmrw, dr iversen locked the wet lab
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: cancellation -- "are off" negates despite the explicit tmrw
+
+=== h7b849bff35 [sam] ===
+> resTock on whey this mon b4 lunch
+SUMMARY  | resTock on whey
+DATE     | this mon
+events: all
+status: ok
+flags: relative_date all_day
+note: "b4 lunch" is a rough qualifier with no slot
+
+=== h7bdbbbed52 [kylar] ===
+> Meeting in Room 201 on Monday at 10am with Professor Smith
+SUMMARY  | Meeting
+LOCATION | in Room 201
+DATE     | Monday
+TSTART   | 10am
+PERSON   | Professor Smith
+events: all
+status: ok
+flags: missing_end_time recurrence_ambiguous
+
+=== h7d25acbc3c [kylar] ===
+> tmrw 3pm call
+DATE     | tmrw
+TSTART   | 3pm
+SUMMARY  | call
+events: all
+status: ok
+flags: relative_date missing_end_time
+
+=== h7e9d3d70ca [sam] ===
+> all souls day roast pig 5am
+DATE     | all souls day
+SUMMARY  | roast pig
+TSTART   | 5am
+events: all
+status: ok
+flags: named_date missing_end_time
+
+=== h7ef77cbf1c [kylar] ===
+> mWf 10Am cCc100 wItH sIr JeFfErSoN in room 201 dont forget
+RECUR    | mWf
+TSTART   | 10Am
+SUMMARY  | cCc100
+PERSON   | sIr JeFfErSoN
+LOCATION | in room 201
+events: all
+status: ok
+flags: missing_end_time
+
+=== h806b69d900 [kylar] ===
+> gym tmrw
+SUMMARY  | gym
+DATE     | tmrw
+events: all
+status: ok
+flags: relative_date all_day
+
+=== h80ace826b0 [kylar] ===
+> MWF 8-10 until Dec gym bro
+RECUR    | MWF
+TSTART   | 8
+TEND     | 10
+BOUND    | until Dec
+SUMMARY  | gym
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred bounded_until
+
+=== h80edda793c [kylar] ===
+> therapy tue x8
+SUMMARY  | therapy
+RECUR    | tue
+BOUND    | x8
+events: all
+status: ok
+flags: bounded_count all_day
+note: RECUR not DATE -- the count bound implies repetition
+
+=== h8120caafa6 [sebastian] ===
+> NO BOAT DAYS THIS WEEK, THE R/V IS IN DRY DOCK
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: cancellation of a series
+
+=== h826f18117a [sarah] ===
+> Class 8-12 TTh
+SUMMARY  | Class
+TSTART   | 8
+TEND     | 12
+RECUR    | TTh
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred
+
+=== h83330c2d4e [kara] ===
+> Every Tues 6pm for 90 mins, small biz bookkeeping at the comm college
+RECUR    | Every Tues
+TSTART   | 6pm
+DURATION | for 90 mins
+SUMMARY  | small biz bookkeeping
+LOCATION | at the comm college
+events: all
+status: ok
+flags: duration_given
+
+=== h838f3d70cf [sarah] ===
+> Payroll processing every 2 weeks on Monday
+SUMMARY  | Payroll processing
+RECUR    | every 2 weeks
+RECUR    | Monday
+events: all
+status: ok
+flags: all_day
+note: interval and weekday stated separately -- both RECUR, merged to INTERVAL=2 BYDAY=MO
+
+=== h83c6dda180 [sarah] ===
+> MW 9-10 CLASS
+RECUR    | MW
+TSTART   | 9
+TEND     | 10
+SUMMARY  | CLASS
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred
+
+=== h84863faf51 [sarah] ===
+> TTH 1PM LAB CLASS AT CS BUILDING ROOM 201
+RECUR    | TTH
+TSTART   | 1PM
+SUMMARY  | LAB CLASS
+LOCATION | AT CS BUILDING ROOM 201
+events: all
+status: ok
+flags: missing_end_time
+
+=== h84c7b8b9f0 [sarah] ===
+> Evening prayers every night but not during bible study
+TSTART   | Evening
+SUMMARY  | prayers
+RECUR    | every night
+events: all
+status: unrepresentable
+flags: time_approximate negated_recurrence
+note: "but not during bible study" excludes an interval defined by another event -- not a weekday subtraction and not an EXDATE we can compute
+
+=== h84cf9853ca [sarah] ===
+> mwf 6 gym x12
+RECUR    | mwf
+TSTART   | 6
+SUMMARY  | gym
+BOUND    | x12
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred bounded_count missing_end_time
+
+=== h85f335e3c5 [kylar] ===
+> LaB mOn 12pM aNd wEd 5pM
+SUMMARY  | LaB
+RECUR    | mOn
+TSTART   | 12pM
+RECUR    | wEd
+TSTART   | 5pM
+events: SUMMARY RECUR#1 TSTART#1 ; SUMMARY RECUR#2 TSTART#2
+status: ok
+flags: multi_event missing_end_time
+note: RECUR not DATE -- two weekday/time pairs in one line is a weekly pattern, not two one-offs
+
+=== h85f48d1e49 [sarah] ===
+> Dentist w/ Dr Cruz on the 15th
+SUMMARY  | Dentist
+PERSON   | Dr Cruz
+DATE     | on the 15th
+events: all
+status: ok
+flags: all_day
+
+=== h8787defdc2 [sam] ===
+> COMPANY SHUTTLE PICKUP 6AM AT GATE 2 PARKING
+SUMMARY  | COMPANY SHUTTLE PICKUP
+TSTART   | 6AM
+LOCATION | AT GATE 2 PARKING
+events: all
+status: ok
+flags: missing_date missing_end_time
+
+=== h88179c8470 [sarah] ===
+> Seminar 9 to 11
+SUMMARY  | Seminar
+TSTART   | 9
+TEND     | 11
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred missing_date
+
+=== h882d8aa996 [sebastian] ===
+> Applications for the Friday Harbor summer program close before the term ends.
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: "Friday" is part of a place name; the deadline is relative to an unstated term end
+
+=== h88fef058a6 [kara] ===
+> every wed 5pm shelter dog walking shift til the Adoption drive in may
+RECUR    | every wed
+TSTART   | 5pm
+SUMMARY  | shelter dog walking shift
+BOUND    | til the Adoption drive in may
+events: all
+status: ok
+flags: bounded_until missing_end_time
+note: bound is an event, not a date; may is incidental
+
+=== h89099b1def [kylar] ===
+> gYm every day except friday bro
+SUMMARY  | gYm
+RECUR    | every day
+RECUR    | except friday
+events: all
+status: ok
+flags: negated_recurrence all_day
+
+=== h896b369bcb [sarah] ===
+> Dinner with the girls tmrw at 7pm maybe in bgc
+SUMMARY  | Dinner
+PERSON   | the girls
+DATE     | tmrw
+TSTART   | 7pm
+LOCATION | in bgc
+events: all
+status: ok
+flags: relative_date missing_end_time
+note: "maybe" hedges the location, not the time
+
+=== h8cca2917af [kylar] ===
+> mwf 6 gym for 12 weeks bro dont miss a session please
+RECUR    | mwf
+TSTART   | 6
+SUMMARY  | gym
+BOUND    | for 12 weeks
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred bounded_count missing_end_time
+
+=== h8dab9018eb [sam] ===
+> sure I aM down for that, just ping me bro
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: "aM" is the verb, not a meridiem
+
+=== h8f12923c9b [sarah] ===
+> Class MW 9 and lab F 2
+SUMMARY  | Class
+RECUR    | MW
+TSTART   | 9
+SUMMARY  | lab
+RECUR    | F
+TSTART   | 2
+events: SUMMARY#1 RECUR#1 TSTART#1 ; SUMMARY#2 RECUR#2 TSTART#2
+status: ok
+flags: multi_event ampm_ambiguous ampm_inferred missing_end_time
+
+=== h902ca93e1f [sarah] ===
+> MWF 8-10 Rm 201 class w sir jefferson
+RECUR    | MWF
+TSTART   | 8
+TEND     | 10
+LOCATION | Rm 201
+SUMMARY  | class
+PERSON   | sir jefferson
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred
+
+=== h90676f82b5 [sarah] ===
+> TMRW 8AM MASS
+DATE     | TMRW
+TSTART   | 8AM
+SUMMARY  | MASS
+events: all
+status: ok
+flags: relative_date missing_end_time
+
+=== h91972f2344 [kara] ===
+> you may collect the permit at window 3 once processing clears
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: "may" is the modal verb; "3" is a window number
+
+=== h927ba475c6 [kara] ===
+> VENDOR SHUTTLE DEPARTS 5:30AM FROM LOT C, GATE 4
+SUMMARY  | VENDOR SHUTTLE DEPARTS
+TSTART   | 5:30AM
+LOCATION | FROM LOT C, GATE 4
+events: all
+status: ok
+flags: missing_date missing_end_time
+
+=== h93ee0268d1 [sarah] ===
+> 6pm zumba for 45 mins
+TSTART   | 6pm
+SUMMARY  | zumba
+DURATION | for 45 mins
+events: all
+status: ok
+flags: duration_given missing_date
+
+=== h945abdac2d [sam] ===
+> every other sunday bulk cook adobo n chicken at home, 6am start
+RECUR    | every other sunday
+SUMMARY  | bulk cook adobo n chicken
+LOCATION | at home
+TSTART   | 6am
+events: all
+status: ok
+flags: missing_end_time
+
+=== h95b48feff7 [kara] ===
+> every other thurs supper club at my place, prep starts 4pm
+RECUR    | every other thurs
+SUMMARY  | supper club
+LOCATION | at my place
+TSTART   | 4pm
+events: all
+status: ok
+flags: missing_end_time
+note: 4pm is when prep starts, arguably not when the supper club starts
+
+=== h96e9d855f4 [kylar] ===
+> mOnDaY tO fRiDaY classes except holidays in room 201
+RECUR    | mOnDaY tO fRiDaY
+RECUR    | except holidays
+SUMMARY  | classes
+LOCATION | in room 201
+events: all
+status: ok
+flags: negated_recurrence excluded_dates all_day
+
+=== h9723daf47f [kylar] ===
+> Every other Tue gym
+RECUR    | Every other Tue
+SUMMARY  | gym
+events: all
+status: ok
+flags: all_day
+
+=== h979e65274c [sarah] ===
+> This Mon lunch
+DATE     | This Mon
+SUMMARY  | lunch
+events: all
+status: ok
+flags: relative_date all_day
+
+=== h9849306b7b [sarah] ===
+> every tue therapy for 8 weeks at 4pm
+RECUR    | every tue
+SUMMARY  | therapy
+BOUND    | for 8 weeks
+TSTART   | 4pm
+events: all
+status: ok
+flags: bounded_count missing_end_time
+
+=== h98aaa11b90 [sam] ===
+> COOKING CLASS WITH AUNT BING EVERY THURS NIGHT, 6 SESSIONS TOTAL
+SUMMARY  | COOKING CLASS
+PERSON   | AUNT BING
+RECUR    | EVERY THURS
+TSTART   | NIGHT
+BOUND    | 6 SESSIONS
+events: all
+status: ok
+flags: bounded_count time_approximate
+
+=== h9928a52ccb [sarah] ===
+> coffee this mon
+SUMMARY  | coffee
+DATE     | this mon
+events: all
+status: ok
+flags: relative_date all_day
+
+=== h9b64b670a6 [sarah] ===
+> Tmrw 10 hair
+DATE     | Tmrw
+TSTART   | 10
+SUMMARY  | hair
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred relative_date missing_end_time
+
+=== h9e0fcb5d70 [kara] ===
+> tmrw i'm styling the engagement party at the barn, load in by 3
+DATE     | tmrw
+SUMMARY  | styling the engagement party
+LOCATION | at the barn
+TSTART   | 3
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred relative_date missing_end_time
+note: "load in by 3" is the only clock time; read as the start
+
+=== h9f6c7f8456 [sebastian] ===
+> SUNDAY DINNER AT NELLS PLACE EVERY WEEK, 4 MORE BEFORE SHE GRADUATES
+RECUR    | SUNDAY
+SUMMARY  | DINNER
+LOCATION | AT NELLS PLACE
+RECUR    | EVERY WEEK
+BOUND    | 4 MORE
+events: all
+status: ok
+flags: bounded_count all_day
+note: RECUR not DATE -- "EVERY WEEK" makes it a series
+
+=== ha0a1a4591e [kylar] ===
+> meeting on monday at 6 for 90 mins in conference room a
+SUMMARY  | meeting
+DATE     | monday
+TSTART   | 6
+DURATION | for 90 mins
+LOCATION | in conference room a
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred duration_given recurrence_ambiguous
+
+=== ha101fed368 [sarah] ===
+> TMRW 8AM MEET
+DATE     | TMRW
+TSTART   | 8AM
+SUMMARY  | MEET
+events: all
+status: ok
+flags: relative_date missing_end_time
+
+=== ha17cedc27d [kara] ===
+> Dad's cardiology follow up the week after Thanksgiving
+SUMMARY  | Dad's cardiology follow up
+DATE     | the week after Thanksgiving
+events: all
+status: ok
+flags: named_date offset_from_anchor all_day
+note: composed date -- +7D from REL:NTH_4_3_11
+
+=== ha1d2196ba8 [sarah] ===
+> daily thru march
+RECUR    | daily
+BOUND    | thru march
+events: all
+status: ok
+flags: bounded_until missing_summary all_day
+
+=== ha1fc9f0306 [sam] ===
+> sat mRkt, sun prep
+DATE     | sat
+SUMMARY  | mRkt
+DATE     | sun
+SUMMARY  | prep
+events: DATE#1 SUMMARY#1 ; DATE#2 SUMMARY#2
+status: ok
+flags: multi_event all_day recurrence_ambiguous
+
+=== ha249e1c2dd [kara] ===
+> sat 10 ledger's nail trim + shots at the mobile vet til 12:30
+DATE     | sat
+TSTART   | 10
+SUMMARY  | ledger's nail trim + shots
+LOCATION | at the mobile vet
+TEND     | 12:30
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred recurrence_ambiguous
+
+=== ha3aaeb2a45 [sarah] ===
+> GYM EVERY 2 WKS
+SUMMARY  | GYM
+RECUR    | EVERY 2 WKS
+events: all
+status: ok
+flags: all_day missing_date
+
+=== ha464a9ad89 [sam] ===
+> DAMN 100 KILOS X 5 REPS FOR ROME EARLIER, HES JUST 24 YRS OLD
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: "X 5" looks like a count bound; it is a rep scheme
+
+=== ha554503fc0 [kara] ===
+> tue 6am dEep clean stockroom, 4x total
+RECUR    | tue
+TSTART   | 6am
+SUMMARY  | dEep clean stockroom
+BOUND    | 4x
+events: all
+status: ok
+flags: bounded_count missing_end_time
+note: RECUR not DATE -- the count bound implies repetition
+
+=== ha555d274cb [sarah] ===
+> MWF 8AM FACULTY MEETING AT THE CONFERENCE ROOM
+RECUR    | MWF
+TSTART   | 8AM
+SUMMARY  | FACULTY MEETING
+LOCATION | AT THE CONFERENCE ROOM
+events: all
+status: ok
+flags: missing_end_time
+
+=== ha55e7b9613 [sarah] ===
+> 7 dinner w mom for 2 hrs
+TSTART   | 7
+SUMMARY  | dinner
+PERSON   | mom
+DURATION | for 2 hrs
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred duration_given missing_date
+
+=== ha751f76b20 [sarah] ===
+> MWF 6AM GYM SQUAD
+RECUR    | MWF
+TSTART   | 6AM
+SUMMARY  | GYM SQUAD
+events: all
+status: ok
+flags: missing_end_time
+
+=== ha8f31560a7 [sarah] ===
+> DAILY EXCEPT SUN
+RECUR    | DAILY
+RECUR    | EXCEPT SUN
+events: all
+status: ok
+flags: negated_recurrence missing_summary all_day
+
+=== hab31a5fc46 [kara] ===
+> Inventory count every time a big consignment drop lands, whenever that is
+events: all
+status: unrepresentable
+flags:
+note: conditional recurrence keyed to an external event
+
+=== hab6327cbb3 [sebastian] ===
+> sun 1pm tank Cleaning at the hendersons for 2 hrs
+DATE     | sun
+TSTART   | 1pm
+SUMMARY  | tank Cleaning
+LOCATION | at the hendersons
+DURATION | for 2 hrs
+events: all
+status: ok
+flags: duration_given recurrence_ambiguous
+
+=== habe8e6a13c [sam] ===
+> damn the Sun was brutal at the court earlier, 2 games straight
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: "Sun" is the star, not Sunday
+
+=== habf51e5eac [kylar] ===
+> Gym MWF x12 starting Monday
+SUMMARY  | Gym
+RECUR    | MWF
+BOUND    | x12
+DATE     | Monday
+events: all
+status: ok
+flags: bounded_count all_day recur_with_anchor
+
+=== hac585e62bf [kara] ===
+> annual physical + bloodwork at the clinic tues 8:45 to 10:15
+SUMMARY  | annual physical + bloodwork
+LOCATION | at the clinic
+DATE     | tues
+TSTART   | 8:45
+TEND     | 10:15
+events: all
+status: ok
+flags: recurrence_ambiguous
+note: "annual" describes the exam type, not a YEARLY recurrence
+
+=== hace7e1a3ca [kylar] ===
+> tmrw gym
+DATE     | tmrw
+SUMMARY  | gym
+events: all
+status: ok
+flags: relative_date all_day
+
+=== haeeebf0fa2 [sam] ===
+> photography workshop orientation is this coming sat
+SUMMARY  | photography workshop orientation
+DATE     | this coming sat
+events: all
+status: ok
+flags: relative_date all_day
+
+=== haf16fbb985 [kara] ===
+> Pickleball TR 7
+SUMMARY  | Pickleball
+RECUR    | TR
+TSTART   | 7
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred missing_end_time
+
+=== haf5b99a41e [kara] ===
+> pickup ball whenever we can get 8 people, mostly Sundays
+events: all
+status: unrepresentable
+flags:
+note: conditional on turnout; "mostly Sundays" is a tendency, not a rule
+
+=== hb00a15dc1d [kylar] ===
+> MWF 8-10 UNTIL DEC
+RECUR    | MWF
+TSTART   | 8
+TEND     | 10
+BOUND    | UNTIL DEC
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred bounded_until missing_summary
+
+=== hb05f506aa6 [sam] ===
+> AUNT JUNE IS BRINGING THE ROAST PIG, WE WONT ORDER ANYMORE
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: "JUNE" is a person's name
+
+=== hb061247c8e [sebastian] ===
+> students will march in order of department at the ceremony
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: "march" is the verb
+
+=== hb15fa7eeb0 [sebastian] ===
+> what time is low tide tmrw i forgot to check
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: question about when, not a scheduling statement
+
+=== hb2075f8bbf [sam] ===
+> All Souls Day: potluck asSembly for the whole clan, ancestral house
+DATE     | All Souls Day
+SUMMARY  | potluck asSembly
+LOCATION | ancestral house
+events: all
+status: ok
+flags: named_date all_day
+
+# end of batch

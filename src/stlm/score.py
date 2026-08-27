@@ -93,10 +93,14 @@ def l2_exact_match(gold: list[L2], pred: list[L2], ignore_summary: bool = False)
             status_ok += 1
         gk = [_norm_event(e) for e in g.to_json()["events"]]
         pk = [_norm_event(e) for e in p.to_json()["events"]]
-        if sorted(gk) == sorted(pk) and g.status == p.status:
+        # Event tuples contain None for absent fields, which cannot be ordered
+        # against strings. Sorting is only for order-insensitive comparison, so
+        # sort on the repr and compare the tuples themselves.
+        key = lambda t: repr(t)
+        if sorted(gk, key=key) == sorted(pk, key=key) and g.status == p.status:
             full += 1
-        gt = sorted(k[1:6] for k in gk)
-        pt = sorted(k[1:6] for k in pk)
+        gt = sorted((k[1:6] for k in gk), key=key)
+        pt = sorted((k[1:6] for k in pk), key=key)
         if gt == pt and g.status == p.status:
             temporal += 1
     return {
