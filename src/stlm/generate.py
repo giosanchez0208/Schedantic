@@ -33,7 +33,8 @@ AXES = {
         "interval", "bounded_until", "bounded_count", "negated",
     ],
     "time_spec": ["none", "start_only", "start_end", "duration", "ambiguous", "tod"],
-    "date_spec": ["none", "rel_simple", "rel_weekday", "absolute", "month_only"],
+    "date_spec": ["none", "rel_simple", "rel_weekday", "month_day",
+                  "month_only", "ordinal", "named"],
     "slot_order": ["temporal_leading", "temporal_trailing", "temporal_split"],
     "register": ["institutional", "informal", "shorthand"],
     "casing": ["lower", "title", "upper", "mixed"],
@@ -46,8 +47,9 @@ AXES = {
 def cell_is_valid(cell: dict) -> bool:
     if cell["recurrence_class"] == "none" and cell["event_count"] == "2":
         return True  # two one-off events in one string is legal
-    if cell["recurrence_class"] != "none" and cell["date_spec"] == "absolute":
-        return False  # an absolute date pins a single day; use bounded_* instead
+    if (cell["recurrence_class"] != "none"
+            and cell["date_spec"] in ("month_day", "ordinal", "named")):
+        return False  # a pinned date names one day; use bounded_* for a series
     if cell["time_spec"] == "none" and cell["date_spec"] == "none":
         return False  # nothing temporal at all -> that is the no_temporal class
     if cell["time_spec"] == "duration" and cell["recurrence_class"] == "negated":
@@ -103,9 +105,12 @@ AXIS_PRIOR: dict[str, list[tuple[str, float]]] = {
         ("tod", 3.3),             # [H] dev 3.2% -- time-of-day word, no clock
     ],
     "date_spec": [
-        ("none", 52.0), ("rel_simple", 16.0), ("rel_weekday", 14.0),
-        ("absolute", 12.0),       # [H] harvest 24.6% month+day, discounted for bias
-        ("month_only", 6.0),      # [H] harvest 28.5% month name, heavily discounted
+        ("none", 46.0), ("rel_simple", 16.0), ("rel_weekday", 14.0),
+        # Every one of these used to render as nothing at all, so the model saw
+        # zero month-name dates, zero ordinals and zero holidays. Dev runs about
+        # one DATE span per 1.8 RECUR; the generator was at one per 8.9.
+        ("month_day", 12.0), ("month_only", 4.0), ("ordinal", 5.0),
+        ("named", 3.0),
     ],
     "slot_order": [
         ("temporal_leading", 55.0), ("temporal_trailing", 35.0), ("temporal_split", 10.0),
@@ -296,6 +301,62 @@ COMMON_TIMES = [
     "11:00", "11:30", "12:00", "13:00", "13:30", "14:00", "15:00", "15:30",
     "16:00", "17:00", "17:30", "18:00", "19:00", "20:00",
 ]
+
+
+def _holiday_surfaces() -> dict[str, list[str]]:
+    """symbol -> every spelling of it. holidays.py read right-to-left.
+
+    The table has existed since the holiday work and the generator had never
+    once emitted "christmas eve" from it: built, then never wired in.
+    """
+    from . import holidays as hol
+
+    out: dict[str, list[str]] = {}
+    for name, (sym, _scope) in hol.FIXED.items():
+        out.setdefault(sym, []).append(name)
+    for name, (off, _scope) in hol.EASTER_RELATIVE.items():
+        out.setdefault(f"REL:EASTER{off:+d}", []).append(name)
+    for name, (n, wd, mo, _scope) in hol.NTH_WEEKDAY.items():
+        out.setdefault(f"REL:NTH_{n}_{wd}_{mo}", []).append(name)
+    for alias, canon in hol.ALIASES.items():
+        for sym, names in out.items():
+            if canon in names:
+                names.append(alias)
+                break
+    return out
+
+
+_HOLIDAY_SURFACES = _holiday_surfaces()
+_HOLIDAY_SYMBOLS = sorted(_HOLIDAY_SURFACES)
+
+
+def _render_date(rng: random.Random, sym: str) -> str | None:
+    """Symbolic date -> a way of writing it. None if we cannot write it.
+
+    Returning None used to be silent: the caller skipped appending the chunk and
+    kept the label anyway, so the row asserted a date the text did not contain.
+    The caller now treats None as "do not claim this date at all".
+    """
+    if sym in lx.REL_DATES:
+        return wchoice(rng, lx.REL_DATES[sym])
+    if sym in _HOLIDAY_SURFACES and (not sym.startswith("REL:MD_")
+                                     or rng.random() < 0.6):
+        # REL:MD_12_25 is both "Christmas" and "December 25". Both are real
+        # ways to write that date, so both need to occur.
+        return rng.choice(_HOLIDAY_SURFACES[sym])
+    if sym.startswith("REL:DOM_"):
+        d = int(sym[len("REL:DOM_"):])
+        return wchoice(rng, sub.DOM_TEMPLATES) % sub.ordinal(d)
+    if sym.startswith("REL:MD_"):
+        mo, d = (int(x) for x in sym[len("REL:MD_"):].split("_"))
+        return wchoice(rng, sub.MD_TEMPLATES) % {
+            "mon": wchoice(rng, lx.MONTH_SURFACES[mo]), "day": d,
+            "ord": sub.ordinal(d)}
+    if sym.startswith("REL:MONTH_"):
+        mo = int(sym[len("REL:MONTH_"):])
+        return wchoice(rng, sub.MONTH_ONLY_TEMPLATES) % {
+            "mon": wchoice(rng, lx.MONTH_SURFACES[mo])}
+    return None
 
 
 def _summary_text(rng: random.Random, cell: dict) -> str:
@@ -518,10 +579,18 @@ def generate_one(rng: random.Random, idx: int, cell: dict | None = None,
         d = rng.choice(["MO", "TU", "WE", "TH", "FR", "SA", "SU"])
         date_sym = rng.choice([f"REL:THIS_{d}", f"REL:NEXT_{d}"])
         flags.append("relative_date")
-    elif cell["date_spec"] == "absolute":
-        date_sym = f"ABS:2026-{rng.randrange(1,13):02d}-{rng.randrange(1,29):02d}"
+    elif cell["date_spec"] == "month_day":
+        # REL:MD_, not ABS:. "Sept 3" means the next Sept 3; pinning a year here
+        # would make the label expire, which is the whole reason L2 is symbolic.
+        date_sym = f"REL:MD_{rng.randrange(1, 13)}_{rng.randrange(1, 29)}"
     elif cell["date_spec"] == "month_only":
-        date_sym = f"ABS:2026-{rng.randrange(1,13):02d}-01"
+        date_sym = f"REL:MONTH_{rng.randrange(1, 13)}"
+    elif cell["date_spec"] == "ordinal":
+        date_sym = f"REL:DOM_{rng.randrange(1, 29)}"
+        flags.append("relative_date")
+    elif cell["date_spec"] == "named":
+        date_sym = rng.choice(_HOLIDAY_SYMBOLS)
+        flags.append("named_date")
 
     # "every MWF starting next week" is real but uncommon. Without this gate it
     # fires on every (recurrence x relative-date) cell intersection, which pushes
@@ -575,6 +644,22 @@ def generate_one(rng: random.Random, idx: int, cell: dict | None = None,
             )
         )
 
+    # A lone weekday with no "every" and no bound is a DATE, not a weekly rule.
+    # ANNOTATION_GUIDE ratified that on 2026-08-27 and the generator never
+    # followed it: DATE 91 times against RECUR 5,254, 58:1 the wrong way. So the
+    # model learned "dentist monday" is weekly and disagreed with gold every
+    # time it saw one. The coin is weighted to match RECUR_PREFIXES, where the
+    # empty prefix already carries ~54% of the mass.
+    bare_weekday = False
+    if (rr is not None and cell["recurrence_class"] == "weekly_single"
+            and len(rr.byday or []) == 1 and rr.until is None and rr.count is None
+            and date_sym is None and n_events == 1
+            and rng.random() < 0.95):
+        date_sym = f"REL:THIS_{rr.byday[0]}"
+        rr = None
+        bare_weekday = True
+        flags.append("relative_date")
+
     # --- verbalize -----------------------------------------------------------
     force_bare = ambiguous
     temporal: list[Chunk] = []
@@ -594,8 +679,18 @@ def generate_one(rng: random.Random, idx: int, cell: dict | None = None,
         if rr is not None:
             temporal.append(Chunk(_render_recur(rng, rr, cell), "RECUR", [0]))
         if date_sym and date_sym.startswith("REL:") and date_sym != "REL:NEXT_OCCURRENCE":
-            surfaces = lx.REL_DATES.get(date_sym)
-            if surfaces:
+            surface = _render_date(rng, date_sym)
+            if surface is None:
+                # We cannot write this date, so we must not claim it. Silently
+                # keeping the symbol is what produced 3,539 rows asserting a
+                # date that appeared nowhere in their own text.
+                date_sym = None
+            if surface is not None and bare_weekday and "this" not in surface.lower():
+                # "Monday" alone is genuinely ambiguous between one day and a
+                # weekly rhythm; "this Monday" is not. Only the bare form is
+                # flagged, exactly as the guide has it.
+                flags.append("recurrence_ambiguous")
+            if surface is not None:
                 if rr is not None:
                     # A recurrence plus a relative anchor only reads coherently as
                     # "every X starting <date>". This is exactly the OQ-6 pattern,
@@ -605,12 +700,12 @@ def generate_one(rng: random.Random, idx: int, cell: dict | None = None,
                                          ("from ", 2.0), ("beginning ", 1.0)])
                     temporal.append(Chunk(" ", None))
                     temporal.append(Chunk(lead, None))
-                    temporal.append(Chunk(wchoice(rng, surfaces), "DATE", [0]))
+                    temporal.append(Chunk(surface, "DATE", [0]))
                     flags.append("recur_with_anchor")
                 else:
                     if temporal:
                         temporal.append(Chunk(" ", None))
-                    temporal.append(Chunk(wchoice(rng, surfaces), "DATE", [0]))
+                    temporal.append(Chunk(surface, "DATE", [0]))
         if has_time:
             if temporal:
                 temporal.append(Chunk(" ", None))

@@ -74,6 +74,11 @@ REL_SYMBOLS = (
     # "Sept 3" = the NEXT Sept 3. Pinning a year here would make gold expire
     # exactly the way an absolute date would. Same reasoning as REL:MONTH_.
     *[f"REL:MD_{m}_{d}" for m in range(1, 13) for d in range(1, 32)],
+    # "on the 15th" = the NEXT 15th of a month. Same non-expiry reasoning again.
+    # This was missing: 10 dev rows carry a DATE span for an ordinal day-of-month
+    # and L2 had nowhere to put it, so the date silently vanished on the way to
+    # jCal -- a date span that parses and then resolves to nothing.
+    *[f"REL:DOM_{d}" for d in range(1, 32)],
 )
 
 # Computed named dates. These are patterned rather than enumerated -- Easter

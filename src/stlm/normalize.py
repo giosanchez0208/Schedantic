@@ -178,8 +178,14 @@ _MD = re.compile(
 )
 
 
+_DATE_LEAD = re.compile(r"^(?:on|by|due|before|starting|start|from|at)\s+", re.I)
+
+
 def normalize_date(text: str) -> tuple[str | None, set[str]]:
     t = re.sub(r"\s+", " ", text.strip().lower())
+    # The annotation guide keeps a leading preposition inside the span ("on the
+    # 15th"), but every matcher below is anchored, so it has to come off here.
+    t = _DATE_LEAD.sub("", t).strip()
     flags: set[str] = set()
 
     m = hol.HOLIDAY_RE.search(t)
@@ -217,7 +223,14 @@ def normalize_date(text: str) -> tuple[str | None, set[str]]:
         elif m.group(3) and m.group(4):
             mon, day = _MONTHS.get(m.group(4)[:3].lower()), int(m.group(3))
         else:
-            return None, {"relative_date"}   # bare "the 15th" -- month unknown
+            # Bare "the 15th": the month is unstated, so it is the NEXT 15th.
+            # This used to return None, which meant the DATE span parsed and
+            # then resolved to nothing -- the date silently disappeared between
+            # L1 and L3. REL:DOM_ gives it somewhere to live.
+            dom = int(m.group(5) or 0)
+            if 1 <= dom <= 31:
+                return f"REL:DOM_{dom}", {"relative_date"}
+            return None, {"relative_date"}
         if mon and 1 <= day <= 31:
             # Symbolic, NOT ABS:. "Sept 3" means the next Sept 3, and pinning a
             # year here would make gold expire. Same reasoning as REL:MONTH_.

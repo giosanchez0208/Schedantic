@@ -303,3 +303,35 @@ TOD_SURFACES: dict[str, list[str]] = {
     "TOD:NIGHT": ["night", "nights", "tonight", "at night", "late night",
                   "before bed", "evening"],
 }
+
+
+# --- date surfaces the generator was missing ---------------------------------
+# lexicon.REL_DATES only ever held the 17 relative symbols. Every other date
+# family -- month-name dates, ordinal day-of-month, bare months, holidays --
+# looked up as None, so the chunk was never appended and the row shipped with a
+# date in L2 that appeared nowhere in the text. 17.7% of balanced rows.
+
+ORDINAL_SUFFIX = {1: "st", 2: "nd", 3: "rd", 21: "st", 22: "nd", 23: "rd", 31: "st"}
+
+
+def ordinal(d: int) -> str:
+    return f"{d}{ORDINAL_SUFFIX.get(d, 'th')}"
+
+
+# How an ordinal day-of-month gets written. "%s" takes the ordinal.
+DOM_TEMPLATES: list[tuple[str, float]] = [
+    ("the %s", 5.0), ("on the %s", 4.0), ("every %s", 2.0), ("%s", 2.0),
+    ("by the %s", 1.5), ("the %s of the month", 1.0),
+]
+
+# How a month-and-day gets written. "%(mon)s" and "%(day)s".
+MD_TEMPLATES: list[tuple[str, float]] = [
+    ("%(mon)s %(day)s", 8.0), ("%(mon)s. %(day)s", 2.0),
+    ("%(day)s %(mon)s", 2.0), ("on %(mon)s %(day)s", 2.0),
+    ("%(mon)s %(ord)s", 3.0), ("the %(ord)s of %(mon)s", 1.0),
+]
+
+MONTH_ONLY_TEMPLATES: list[tuple[str, float]] = [
+    ("in %(mon)s", 3.0), ("%(mon)s", 3.0), ("sometime in %(mon)s", 1.0),
+    ("early %(mon)s", 1.0), ("by %(mon)s", 1.5),
+]

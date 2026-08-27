@@ -75,6 +75,23 @@ def resolve_date(symbol: str, ref: dt.datetime, rule: RRule | None = None,
         return ref.date() + dt.timedelta(days=1)
     if symbol == "REL:DAY_AFTER_TOMORROW":
         return ref.date() + dt.timedelta(days=2)
+    if symbol.startswith("REL:DOM_"):
+        # The next occurrence of that day-of-month, this month or next. Months
+        # that are too short are skipped rather than clamped: "the 31st" in
+        # February means the 31st of the next month that has one, not Feb 28.
+        day = int(symbol[len("REL:DOM_"):])
+        y, mo = ref.year, ref.month
+        for _ in range(14):
+            try:
+                cand = dt.date(y, mo, day)
+            except ValueError:
+                cand = None
+            if cand is not None and cand >= ref.date():
+                return cand
+            mo += 1
+            if mo > 12:
+                mo, y = 1, y + 1
+        raise ResolutionError(f"no month with day {day}")
     m = _OFFSET_RE.match(symbol)
     if m:
         # Composed date: resolve the ANCHOR first, then step from it. This is
