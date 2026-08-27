@@ -183,3 +183,45 @@ the model as silent label noise:
 3. **Decide the segmentation mechanism** (OQ-1). It is the largest open
    architectural risk and 17.7% is too high to defer.
 4. Re-run `gap_report.py` after each batch of 50 to watch the P0 rows fill.
+
+---
+
+## Held-out observations (2026-08-27) — recorded, deliberately NOT fixed
+
+The test split (bryan + phil, 98 items) was annotated and scored for the first
+time. These defects were found by reading test output. They are written down
+here rather than patched, because fixing a parser against the held-out set is
+how a test set stops being a test set. Anything acted on below must be
+accompanied by re-splitting, or by reporting the affected items as burned.
+
+**1. The bare trailing end time.** `8am gym 9am`, `8am Gym session 12nn`,
+`9:30 Seminar on Ethics to 11` — a start time, a title, then an end time with no
+range punctuation. The parser tags the second time `TSTART`, not `TEND`.
+
+- 19 of 78 schedulable test items (24%).
+- Temporal exact match on those 19: **0.000**.
+- Also causes 6 of the 7 event-count misses: a second TSTART with a defining
+  span between the two makes segmentation split one event into two.
+- Excluding these 19, test temporal exact goes 0.564 → 0.746.
+
+The construction appears in **zero** dev rows and **zero** harvested strings.
+Every non-test instance of two times in one line carries an explicit connector
+(`to`, `until`, `through`, `and`, an en dash). This is one author's house style,
+which is precisely the thing an author-disjoint split exists to expose.
+
+**2. Greedy negation span.** `8AM DAILY STANDUP 9AM SHARP NO EXCUSES BRING
+LAPTOP` tags `EXCUSES BRING LAPTOP` as RECUR. The negation matcher fires on
+`NO ...` and swallows the rest of the line.
+
+**3. `next weds` does not resolve.** `normalize_date("next weds")` returns None;
+the `weds` abbreviation is missing from the weekday table.
+
+**4. Offset-from-anchor is parsed but silently flattened.**
+`normalize_date("the tues after Halloween")` returns `REL:MD_10_31` — Halloween
+itself, dropping the "tues after". The L2 schema expresses this correctly
+(`REL:NEXT_TU@REL:MD_10_31` resolves to 2026-11-03); only the normalizer drops
+it. By TARGET.md's own definition this is a silent catastrophic error: wrong
+date, no flag.
+
+Items 2-4 were found while probing, not from the score, but they were still
+prompted by test strings and carry the same caveat.
