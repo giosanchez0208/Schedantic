@@ -121,3 +121,39 @@ Then the chatter question. `gYm tmrw at 6pm bro dont forget your water bottle an
 Where I got it wrong: I re-derived every gold summary using the same trim code the parser uses, then reported the score as if it meant something. It didn't. Gold and parser were making identical trim mistakes and scoring them as agreement &mdash; leading commas, dangling `til`, articles stripped off the front of titles. Fixed the trim, and the number fell from 0.717 to 0.650. The lower one is the real one.
 
 TLDR: gold that is _derived_ instead of _annotated_ stops being an independent measurement. If the thing being measured and the yardstick share code, the yardstick is decoration. Worth remembering before I touch the test set.
+### Phase 9: Segmentation, or how many events is this
+
+The one gap I'd been carrying since M5. `Monday 12pm, Wednesday 5pm Laboratory` flattened to one event and Wednesday silently became noon. I'd written it in as a test that asserts the broken behavior so it would fail loudly the day I fixed it.
+
+First thing I got right was measuring before designing. My gut said multi-event was common; a comma-counting regex said 14.5%. Actually annotating it says **4.9%**, 12 items out of 244. And of those 12, only 3 share a subject. So the thing I was about to build a general machine for barely happens.
+
+Second thing was deciding the scope instead of inferring it. `Class MW 9, lab F` &mdash; one prompt, two subjects. I don't want that in the pipeline. **One prompt is one subject.** Even if it takes several VEVENTs to express the timing, the subject is the same. That kills most of the problem outright.
+
+So there are only two reasons a line becomes multiple events, and they're unrelated:
+
+1. **Two subjects.** `Monday call the dentist, Wednesday pick up the meds`.
+2. **One subject, slots that can't share a rule.** `Lab Mon12pm Wed5pm`. That's the RFC 5545 cross product again &mdash; one VEVENT there schedules four occurrences instead of two.
+
+Then I asked whether this couldn't just be a parser-parser like the date resolver, and it can. Cut at a delimiter, run the span proposer on each half, keep the cut only if **both halves stand alone** &mdash; own day slot AND own subject. Recurse. That one test does everything: `Mon, Wed and Fri` doesn't cut because neither half has a subject, `gym tmrw, 7pm start` doesn't cut because the right half has no day.
+
+Grouping within a subject needed its own trick. A day slot that repeats starts a new event, but only if another slot sits *between* it and the previous one of its type. Without that gap test a day list splits three ways. With it, `Lab Mon12pm Wed5pm` splits and `Mon Wed Fri 9am` doesn't.
+
+Also found an ordering constraint I didn't expect. Segmentation has to run **before** span proposal, not after. The bare-weekday rule treats a second day slot as evidence of recurrence, and that's only true inside one subject &mdash; `Lab Mon12pm Wed5pm` is weekly, `Monday call X, Wednesday call Y` is two one-off dates. Same spans, opposite answers. The segment boundary is the thing that tells them apart, so it has to exist first.
+
+One string, `Lab Mon12pm Wed5pm`, turned out to be hiding two separate bugs. The time regex had one lookbehind for every branch, so a time flush against a letter never matched and both clock times fell into the summary. And the weekday demotion promised in its own comment to count a second recurrence span as repetition, then never implemented the clause. Neither had anything to do with segmentation; I only saw them because I had a case that needed both.
+
+Left one gold item disagreeing with me: `tmrw meet the sneaker buyer at the mall then deliv the bars`, annotated as two events. Two subjects sharing one time, which is the exact inverse of the case I decided to support. Relabelled it to one event. If gold contradicts the spec, one of them is wrong, and this time it was gold.
+
+| | before | after |
+|---|---|---|
+| event count correct | &mdash; | **244/244** |
+| single events falsely split | &mdash; | **0/233** |
+| temporal exact | 0.820 | **0.861** |
+| RRULE equivalence | 0.857 | **0.897** |
+| whole-event exact | 0.627 | 0.664 |
+
+RRULE is three items off target now. Zero false splits matters more to me than the 11/12 catch rate &mdash; a wrong split wrecks a line that already parsed fine, a missed split leaves it exactly where it was.
+
+Last thing, and it's the annoying one. My `check()` helper appends to a list and prints; it never raises. Running under pytest, that meant every failing check was invisible and the suite reported "12 passed" while I was actively changing behavior underneath it. Only caught it because I expected a test to break and it didn't. Added the assertion that actually fails the run.
+
+TLDR: a test that can't fail isn't a test, it's a print statement. Same shape as the gold problem last phase &mdash; both times the measuring instrument was quietly agreeing with whatever I did.
