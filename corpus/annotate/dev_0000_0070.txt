@@ -1,0 +1,649 @@
+# L1 ANNOTATION -- split=dev  items=70
+# annotator: claude (DEV ONLY -- test set is annotated by a human, see below)
+#
+# Annotated from raw text without consulting preannotate.py output. That matters
+# because the same party wrote the rule proposer; seeing its suggestions would
+# launder the rules into gold and make M5 score against its own author.
+#
+# One judgement call applied consistently, NOT yet in ANNOTATION_GUIDE.md:
+#   A bare SINGLE weekday ("THURS lunch", "Wed stock") is tagged DATE, read as a
+#   one-off on the coming Thursday. A multi-day code ("MWF", "TTh"), an explicit
+#   "every", or a count/until bound is tagged RECUR. Rationale: genuine recurrence
+#   in this register almost always carries "every" or a multi-day cluster, while a
+#   lone weekday usually means the next one. This disagrees with the parser, which
+#   makes every weekday RECUR. Flagging so it can be ratified or overturned.
+
+=== h02d2f7dcc1 [sebastian] ===
+> Good Friday: no Meat in the dining hall, fish line only
+DATE     | Good Friday
+SUMMARY  | no Meat
+LOCATION | in the dining hall
+events: all
+status: ok
+flags: named_date all_day
+note: "fish line only" is trailing detail, untagged per guide
+
+=== h034694bcf5 [sam] ===
+> Check up with Doc Salcedo the Monday after All Souls Day
+events: all
+status: unrepresentable
+flags: named_date
+note: "the Monday after <named date>" is an OFFSET FROM a holiday. No symbol for that -- REL:MD_11_2 loses the offset and would book the wrong day.
+
+=== h037766c9d9 [sarah] ===
+> THURS LUNCH W ATE BEA
+DATE     | THURS
+SUMMARY  | LUNCH
+PERSON   | ATE BEA
+events: all
+status: ok
+flags: all_day
+
+=== h041c779359 [sebastian] ===
+> every wed 6pm aquarium Docent shift til the exhibit closes in april
+RECUR    | every wed
+TSTART   | 6pm
+SUMMARY  | aquarium Docent shift
+BOUND    | til the exhibit closes in april
+events: all
+status: ok
+flags: bounded_until missing_end_time
+note: bound is an event ("the exhibit closes"), not a date; april is incidental
+
+=== h04b066cddc [sebastian] ===
+> Water polo TR 9
+SUMMARY  | Water polo
+RECUR    | TR
+TSTART   | 9
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred missing_end_time
+
+=== h0525b2340c [sam] ===
+> sat 8am grocEry + laundry drop x6 wks only
+RECUR    | sat
+TSTART   | 8am
+SUMMARY  | grocEry + laundry drop
+BOUND    | x6 wks
+events: all
+status: ok
+flags: bounded_count missing_end_time
+note: RECUR not DATE -- the count bound implies repetition
+
+=== h0591e46cb3 [sam] ===
+> physical therapy for my knee at the clinic tues 9:30 to 11 am
+SUMMARY  | physical therapy for my knee
+LOCATION | at the clinic
+DATE     | tues
+TSTART   | 9:30
+TEND     | 11 am
+events: all
+status: ok
+flags:
+
+=== h06423d311a [kylar] ===
+> Biweekly staff meeting every other Tuesday at 10am in conference room
+RECUR    | Biweekly
+SUMMARY  | staff meeting
+RECUR    | every other Tuesday
+TSTART   | 10am
+LOCATION | in conference room
+events: all
+status: ok
+flags: missing_end_time
+
+=== h07644d7bc4 [sarah] ===
+> Every other Tue
+RECUR    | Every other Tue
+events: all
+status: ok
+flags: missing_summary all_day
+
+=== h07bed9b94d [sarah] ===
+> Every other Tue book club
+RECUR    | Every other Tue
+SUMMARY  | book club
+events: all
+status: ok
+flags: all_day
+
+=== h0965f617ff [sarah] ===
+> Lab @ CS Bldg
+events: all
+status: unresolvable
+flags:
+note: an event and a place, but no time or date anywhere -- nothing to schedule it on
+
+=== h09e1248d63 [sarah] ===
+> 3PM DENTIST W/ DR CRUZ
+TSTART   | 3PM
+SUMMARY  | DENTIST
+PERSON   | DR CRUZ
+events: all
+status: ok
+flags: missing_date missing_end_time
+
+=== h0a6c147550 [sarah] ===
+> Study group 7pm for 2hrs at lib
+SUMMARY  | Study group
+TSTART   | 7pm
+DURATION | for 2hrs
+LOCATION | at lib
+events: all
+status: ok
+flags: duration_given missing_date
+
+=== h0a9971e75c [sarah] ===
+> TTH 7PM ZUMBA W MOM
+RECUR    | TTH
+TSTART   | 7PM
+SUMMARY  | ZUMBA
+PERSON   | MOM
+events: all
+status: ok
+flags: missing_end_time
+
+=== h0ab81c8237 [sarah] ===
+> ALT FRIDAYS
+RECUR    | ALT FRIDAYS
+events: all
+status: ok
+flags: missing_summary all_day
+
+=== h0abcad8a36 [sarah] ===
+> Check up nxt tuesday w dr lim
+SUMMARY  | Check up
+DATE     | nxt tuesday
+PERSON   | dr lim
+events: all
+status: ok
+flags: relative_date all_day
+
+=== h0ae9804ccf [sarah] ===
+> Netflix and chill 9 for 3 hrs
+SUMMARY  | Netflix and chill
+TSTART   | 9
+DURATION | for 3 hrs
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred duration_given missing_date
+
+=== h0b1f7b81f5 [sebastian] ===
+> Flu Shot table at the rec center is up all of Homecoming week
+SUMMARY  | Flu Shot table
+LOCATION | at the rec center
+events: all
+status: unresolvable
+flags:
+note: "Homecoming week" is an institution-specific period with no fixed date
+
+=== h0e000edce1 [kylar] ===
+> MWF 10AM CCC100 WITH SIR JEFFERSON
+RECUR    | MWF
+TSTART   | 10AM
+SUMMARY  | CCC100
+PERSON   | SIR JEFFERSON
+events: all
+status: ok
+flags: missing_end_time
+
+=== h10e05a8578 [kylar] ===
+> mw 8 class
+RECUR    | mw
+TSTART   | 8
+SUMMARY  | class
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred missing_end_time
+
+=== h110eec1c09 [kara] ===
+> scratch tuesday, mia can't cover the register
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: cancellation -- "scratch" removes an event rather than creating one
+
+=== h14932cb669 [sam] ===
+> every other fri praise nite at Church, 7pm start
+RECUR    | every other fri
+SUMMARY  | praise nite
+LOCATION | at Church
+TSTART   | 7pm
+events: all
+status: ok
+flags: missing_end_time
+
+=== h14d122a0ad [sam] ===
+> CHICKEN BREAST 220 PER KILO AT THE MARKET, U SHOULD BUY 3
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: numbers are a price and a count, not times
+
+=== h1584a157c4 [sarah] ===
+> Therapy every Tue for 8 weeks
+SUMMARY  | Therapy
+RECUR    | every Tue
+BOUND    | for 8 weeks
+events: all
+status: ok
+flags: bounded_count all_day
+
+=== h178db0e614 [sebastian] ===
+> whens bexs thing again, sat or sun i genuinely dont know
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: a question about when something is, not a statement scheduling it
+
+=== h18264e9560 [sarah] ===
+> THIS MON 1PM
+DATE     | THIS MON
+TSTART   | 1PM
+events: all
+status: ok
+flags: relative_date missing_summary missing_end_time
+
+=== h1978a2f5cf [kylar] ===
+> Sept 3 at 2pm defense of thesis in room 301 please arrive early
+DATE     | Sept 3
+TSTART   | 2pm
+SUMMARY  | defense of thesis
+LOCATION | in room 301
+events: all
+status: ok
+flags: missing_end_time
+
+=== h198e73402b [sarah] ===
+> Mom's birthday Oct 21 dinner
+SUMMARY  | Mom's birthday
+DATE     | Oct 21
+events: all
+status: ok
+flags: all_day
+note: "dinner" is a second title fragment; SUMMARY must be contiguous so it is untagged. Argues for allowing discontinuous SUMMARY.
+
+=== h1a35d85e55 [sarah] ===
+> Yoga 6 sessions
+events: all
+status: unresolvable
+flags: bounded_count
+note: a count with no frequency and no weekday -- cannot build an RRULE from it
+
+=== h1b9427455e [sarah] ===
+> MEETING AT 3PM SHARP RE PROJECT
+SUMMARY  | MEETING
+TSTART   | 3PM
+events: all
+status: ok
+flags: missing_date missing_end_time
+
+=== h1c1db83f86 [sarah] ===
+> 6pm yoga for 45 mins
+TSTART   | 6pm
+SUMMARY  | yoga
+DURATION | for 45 mins
+events: all
+status: ok
+flags: duration_given missing_date
+
+=== h1ca81c965b [sebastian] ===
+> sat mkt, sun Stew
+DATE     | sat
+SUMMARY  | mkt
+DATE     | sun
+SUMMARY  | Stew
+events: DATE#1 SUMMARY#1 ; DATE#2 SUMMARY#2
+status: ok
+flags: multi_event all_day
+
+=== h1d32582ed8 [kylar] ===
+> gYm tmrw at 6pm bro dont forget your water bottle and towel please
+SUMMARY  | gYm
+DATE     | tmrw
+TSTART   | 6pm
+events: all
+status: ok
+flags: relative_date missing_end_time
+
+=== h1e5b618499 [sarah] ===
+> CCC100 with Sir Jefferson MWF 9am
+SUMMARY  | CCC100
+PERSON   | Sir Jefferson
+RECUR    | MWF
+TSTART   | 9am
+events: all
+status: ok
+flags: missing_end_time
+
+=== h1fd742b061 [sam] ===
+> NO CLASSES TOMORROW DUE TO SIGNAL NO. 2, PER LGU ADVISORY
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: cancellation announcement -- creates no event despite "TOMORROW"
+
+=== h20e95d3173 [sarah] ===
+> f 15 department assembly
+DATE     | f
+TSTART   | 15
+SUMMARY  | department assembly
+events: all
+status: ok
+flags: missing_end_time
+note: "15" could be 15:00 or the 15th of the month; read as 24h time
+
+=== h211fc7e171 [kylar] ===
+> gYm at 6 for 90 mins bro dont be late please thanks
+SUMMARY  | gYm
+TSTART   | 6
+DURATION | for 90 mins
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred duration_given missing_date
+
+=== h223032f4ae [sarah] ===
+> Meeting on Zoom 3pm w the dept head
+SUMMARY  | Meeting
+LOCATION | on Zoom
+TSTART   | 3pm
+PERSON   | the dept head
+events: all
+status: ok
+flags: missing_date missing_end_time
+
+=== h22877ecadd [sarah] ===
+> meeting with sir jefferson on tuesday at 10am
+SUMMARY  | meeting
+PERSON   | sir jefferson
+DATE     | tuesday
+TSTART   | 10am
+events: all
+status: ok
+flags: missing_end_time
+
+=== h22abf6f8bf [sarah] ===
+> tom lunch
+DATE     | tom
+SUMMARY  | lunch
+events: all
+status: ok
+flags: relative_date all_day
+
+=== h22d97f3232 [kara] ===
+> when does the permit office open, 8 or 9?
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: asking about opening hours, not scheduling anything
+
+=== h241337c8a2 [sarah] ===
+> class ccc100 with sir jefferson every monday
+SUMMARY  | class ccc100
+PERSON   | sir jefferson
+RECUR    | every monday
+events: all
+status: ok
+flags: all_day
+
+=== h244cb15a76 [sam] ===
+> Anti-Rabies Vaccination w/ Doc Mirasol on Sat 8am
+SUMMARY  | Anti-Rabies Vaccination
+PERSON   | Doc Mirasol
+DATE     | Sat
+TSTART   | 8am
+events: all
+status: ok
+flags: missing_end_time
+
+=== h24d09af855 [sebastian] ===
+> COUNTED 40 SEA STARS ON ONE TRANSECT, 12 OF THEM WASTING
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: counts, not times
+
+=== h24e73b7aeb [sarah] ===
+> Morning jog every day but not Sunday
+TSTART   | Morning
+SUMMARY  | jog
+RECUR    | every day
+RECUR    | but not Sunday
+events: all
+status: ok
+flags: time_approximate negated_recurrence
+
+=== h274cc7fd55 [kylar] ===
+> monday 8 lecture series on economics room 201 dont be late
+DATE     | monday
+TSTART   | 8
+SUMMARY  | lecture series on economics
+LOCATION | room 201
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred missing_end_time
+
+=== h2808aeb897 [sam] ===
+> TTh 6 baLl at the covered court til 8
+RECUR    | TTh
+TSTART   | 6
+SUMMARY  | baLl
+LOCATION | at the covered court
+TEND     | 8
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred
+note: "til 8" is an END TIME here, not a series bound -- bare hour, not a date
+
+=== h285b302db5 [sebastian] ===
+> every other thurs we do a big pot of soemthing at gus place, 7ish
+RECUR    | every other thurs
+SUMMARY  | we do a big pot of soemthing
+LOCATION | at gus place
+TSTART   | 7ish
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred time_approximate missing_end_time
+
+=== h28aa3669e8 [sam] ===
+> MARCH OVER THERE FAST, WE ARE ALREADY LATE FOR THE GAME
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: "MARCH" is a verb
+
+=== h294cb30041 [kara] ===
+> coffee w/ priya sometime after the holiday rush dies down
+events: all
+status: unresolvable
+flags:
+note: real event, but "after the holiday rush dies down" pins nothing
+
+=== h2ae7700c5f [sam] ===
+> gym when im not on duty at the store, usually 2-3x a wEek
+events: all
+status: unrepresentable
+flags:
+note: conditional recurrence plus an approximate frequency -- neither is expressible
+
+=== h2c99a9a388 [sarah] ===
+> Thursday 3pm check-in with Dean Santos
+DATE     | Thursday
+TSTART   | 3pm
+SUMMARY  | check-in
+PERSON   | Dean Santos
+events: all
+status: ok
+flags: missing_end_time
+
+=== h2d549a028e [sam] ===
+> Every Wed 6pm for 2 hrs, NASM review class at the training center
+RECUR    | Every Wed
+TSTART   | 6pm
+DURATION | for 2 hrs
+SUMMARY  | NASM review class
+LOCATION | at the training center
+events: all
+status: ok
+flags: duration_given
+
+=== h2ea3c9dd54 [sebastian] ===
+> LAB MTG M-TH NO TUE
+SUMMARY  | LAB MTG
+RECUR    | M-TH
+RECUR    | NO TUE
+events: all
+status: ok
+flags: negated_recurrence all_day
+
+=== h2f95988691 [kylar] ===
+> 9am sync with boss bro
+TSTART   | 9am
+SUMMARY  | sync
+PERSON   | boss
+events: all
+status: ok
+flags: missing_date missing_end_time
+
+=== h303d450843 [kara] ===
+> balloon arch quote thIs mon by eod
+SUMMARY  | balloon arch quote
+DATE     | thIs mon
+events: all
+status: ok
+flags: relative_date all_day
+note: "by eod" is a deadline qualifier with no slot; untagged
+
+=== h309a9d6413 [sebastian] ===
+> friendsgiving pot 4
+SUMMARY  | friendsgiving pot
+TSTART   | 4
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred missing_date missing_end_time
+note: "friendsgiving" is a named occasion with no fixed date -- treated as title, not DATE
+
+=== h3109a905ec [sarah] ===
+> 8am mass w mom
+TSTART   | 8am
+SUMMARY  | mass
+PERSON   | mom
+events: all
+status: ok
+flags: missing_date missing_end_time
+
+=== h3186c2664d [sebastian] ===
+> dentist for the chipped one at the clinic on friday, 2 - 3:15
+SUMMARY  | dentist for the chipped one
+LOCATION | at the clinic
+DATE     | friday
+TSTART   | 2
+TEND     | 3:15
+events: all
+status: ok
+flags: ampm_ambiguous ampm_inferred
+
+=== h3292153b75 [sarah] ===
+> Class MW 9, lab F
+SUMMARY  | Class
+RECUR    | MW
+TSTART   | 9
+SUMMARY  | lab
+RECUR    | F
+events: SUMMARY#1 RECUR#1 TSTART ; SUMMARY#2 RECUR#2
+status: ok
+flags: multi_event ampm_ambiguous ampm_inferred missing_end_time
+
+=== h345ed1e7db [sebastian] ===
+> Rent split reminder every 1st til the lease ends in may
+SUMMARY  | Rent split reminder
+RECUR    | every 1st
+BOUND    | til the lease ends in may
+events: all
+status: ok
+flags: bounded_until all_day
+note: "every 1st" is monthly BYMONTHDAY=1, the only monthly recurrence in this batch
+
+=== h34bcaa9663 [sarah] ===
+> 10AM Meeting with Sir Jefferson re budget
+TSTART   | 10AM
+SUMMARY  | Meeting
+PERSON   | Sir Jefferson
+events: all
+status: ok
+flags: missing_date missing_end_time
+
+=== h34cae92634 [kylar] ===
+> monday 6pm gym for 90 mins dont be late bro please
+DATE     | monday
+TSTART   | 6pm
+SUMMARY  | gym
+DURATION | for 90 mins
+events: all
+status: ok
+flags: duration_given
+
+=== h351ea63fc5 [sam] ===
+> Wed stock, Sat sell
+DATE     | Wed
+SUMMARY  | stock
+DATE     | Sat
+SUMMARY  | sell
+events: DATE#1 SUMMARY#1 ; DATE#2 SUMMARY#2
+status: ok
+flags: multi_event all_day
+
+=== h3579973655 [kara] ===
+> Pastry drop from Tasha daily except Sun
+SUMMARY  | Pastry drop
+PERSON   | Tasha
+RECUR    | daily
+RECUR    | except Sun
+events: all
+status: ok
+flags: negated_recurrence all_day
+
+=== h3586095cd3 [sarah] ===
+> tth 13 office hours for consultation
+RECUR    | tth
+TSTART   | 13
+SUMMARY  | office hours for consultation
+events: all
+status: ok
+flags: missing_end_time
+
+=== h362d285f19 [kara] ===
+> MAY FROM THE BAKERY SAID SHE'S OUT OF THE 9 INCH ROUNDS
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: "MAY" is a person's name; "9 INCH" is a size
+
+=== h38e1510b52 [sam] ===
+> please forward the documents to ms. april dela cruz at the front desk
+events: all
+status: no_temporal
+flags: temporal_lookalike
+note: "april" is a surname here
+
+=== h3a056df6c1 [kara] ===
+> Menu reSet q2 wks
+SUMMARY  | Menu reSet
+RECUR    | q2 wks
+events: all
+status: ok
+flags: all_day
+note: "q2 wks" = every 2 weeks; "q" for "every" is an abbreviation the lexicon lacks
+
+=== h3a616582cb [sarah] ===
+> Every day except Sunday 6am mass at the chapel
+RECUR    | Every day
+RECUR    | except Sunday
+TSTART   | 6am
+SUMMARY  | mass
+LOCATION | at the chapel
+events: all
+status: ok
+flags: negated_recurrence missing_end_time
+
+# end of batch

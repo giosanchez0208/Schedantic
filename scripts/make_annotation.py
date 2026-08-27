@@ -31,6 +31,10 @@ def main() -> None:
     ap.add_argument("split", choices=["dev", "test"])
     ap.add_argument("--n", type=int, default=40)
     ap.add_argument("--start", type=int, default=0)
+    ap.add_argument("--blank", action="store_true",
+                    help="emit dev unfilled too -- used when the annotator is the "
+                         "same party that wrote the rule proposer, so seeing the "
+                         "proposals would just launder the rules into gold")
     args = ap.parse_args()
 
     splits = json.loads((ROOT / "corpus" / "splits.json").read_text(encoding="utf-8"))
@@ -82,7 +86,7 @@ def main() -> None:
     for r in chunk:
         w(f"=== {r['id']} [{r['author']}] ===")
         w(f"> {r['text']}")
-        if args.split == "dev":
+        if args.split == "dev" and not args.blank:
             for p in with_summary(r["text"]):
                 w(f"{p.type:<9}| {p.text}")
         else:

@@ -59,6 +59,7 @@ annotated the same way every time.
 | Connector between spans — the `with` in `X with Y` | Belongs to no span. Leave it untagged. |
 | Bare hour, no am/pm — `MW 8` | Tag `8` as TSTART. Add flags `ampm_ambiguous ampm_inferred`. |
 | Time range — `8-12nn` | TSTART `8`, TEND `12nn`. The `-` is untagged. |
+| **Bare SINGLE weekday** -- `THURS lunch`, `Wed stock` | **PROVISIONAL: tag `DATE`**, read as the coming Thursday. A multi-day code (`MWF`, `TTh`), an explicit `every`, or a count/until bound makes it `RECUR`. Rationale: real recurrence in this register almost always carries `every` or a cluster. **Applied to 21 spans in dev batch 1 and NOT yet ratified by a human annotator** -- the rule parser calls every weekday RECUR, so this is the single largest systematic disagreement in the corpus. |
 | Two events in one line — `Class MW 9, lab F` | Nothing gets deleted. Split with the `events:` line. |
 | Trailing chatter — `please arrive early`, `bro`, `dont forget` | **Leave it untagged.** It is not a time, a title, or a place. Low coverage on such a line is correct, not a mistake. See OQ-14. |
 | Same text appears twice — `8am gym 9am` | Disambiguate with `#`: `TSTART \| 8am` and `TEND \| 9am #2` if needed. |
