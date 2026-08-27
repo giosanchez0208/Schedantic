@@ -24,7 +24,6 @@ SPAN_TYPES = (
                # One span type on purpose -- L1 records WHERE, the normalizer
                # decides which kind and fills rrule.until or rrule.count.
     "PERSON",
-    "LOCATION",
     "DURATION",  # provisional; gated on OQ-8
 )
 
@@ -249,7 +248,6 @@ class L2Event:
     duration_minutes: int | None = None
     rrule: RRule | None = None
     attendees: list[str] = field(default_factory=list)
-    location: str | None = None
     # Symbolic exclusions -- "HOLIDAYS" rather than a date list, so the set stays
     # resolvable against a reference time and gold does not expire. L3 expands
     # these into RFC 5545 EXDATE entries over the series horizon.
@@ -307,7 +305,6 @@ class L2:
                     duration_minutes=e.get("duration_minutes"),
                     rrule=RRule(**e["rrule"]) if e.get("rrule") else None,
                     attendees=list(e.get("attendees", [])),
-                    location=e.get("location"),
                     exclude=list(e.get("exclude", [])),
                 )
             )

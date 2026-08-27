@@ -259,8 +259,6 @@ def l2_to_jcal(l2: L2, ref: dt.datetime, tzid: str | None = None,
             eprops.append(["dtend", dict(params), vtype, fmt(end)])
         if ev.summary:
             eprops.append(["summary", {}, "text", ev.summary])
-        if ev.location:
-            eprops.append(["location", {}, "text", ev.location])
         # OQ-2 resolved: a named person is part of the answer to "what goes on
         # the calendar", so they live in SUMMARY. No ATTENDEE property -- a
         # fabricated mailto for "Ate Bea" is worse than nothing.

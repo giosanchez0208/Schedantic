@@ -5,7 +5,7 @@
 === hb3e083776d [sam] ===
 > Packed lunch from home daily except Fri, thats cheat day
 SUMMARY  | Packed lunch
-LOCATION | from home
+SUMMARY  | from home
 RECUR    | daily
 RECUR    | except Fri
 events: all
@@ -17,7 +17,7 @@ flags: negated_recurrence all_day
 SUMMARY  | Lecture
 TSTART   | 9am
 TEND     | 11am
-LOCATION | in Room 201
+SUMMARY  | in Room 201
 RECUR    | every Monday and Wednesday
 events: all
 status: ok
@@ -38,7 +38,7 @@ note: monthly BYMONTHDAY=15
 DATE     | sun
 TSTART   | 8am
 SUMMARY  | booth Setup
-LOCATION | at the flea
+SUMMARY  | at the flea
 DURATION | for 3 hrs
 events: all
 status: ok
@@ -91,7 +91,7 @@ flags:
 === hb78fb246f1 [sarah] ===
 > Lab @ CS Bldg every Tuesday at 1 to 4pm
 SUMMARY  | Lab
-LOCATION | @ CS Bldg
+SUMMARY  | @ CS Bldg
 RECUR    | every Tuesday
 TSTART   | 1
 TEND     | 4pm
@@ -105,7 +105,7 @@ RECUR    | Every Wed
 TSTART   | 1pm
 DURATION | for 3 hrs
 SUMMARY  | inverts lab
-LOCATION | in the wet room downstairs
+SUMMARY  | in the wet room downstairs
 events: all
 status: ok
 flags: duration_given
@@ -122,7 +122,7 @@ flags: ampm_ambiguous ampm_inferred missing_end_time
 === hb8c005dc88 [sam] ===
 > Free Blood Pressure ScReening at the Health Center the day after All Souls Day
 SUMMARY  | Free Blood Pressure ScReening
-LOCATION | at the Health Center
+SUMMARY  | at the Health Center
 DATE     | the day after All Souls Day
 events: all
 status: ok
@@ -135,7 +135,7 @@ SUMMARY  | Class
 RECUR    | MWF
 TSTART   | 8
 TEND     | 10
-LOCATION | Rm 201
+SUMMARY  | Rm 201
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred
@@ -233,7 +233,7 @@ note: "end of march" -- our month bound resolves to the 1st, so this is off by a
 DATE     | sEpt 3
 TSTART   | 10am
 SUMMARY  | quarterly rEview
-LOCATION | at the office
+SUMMARY  | at the office
 events: all
 status: ok
 flags: missing_end_time
@@ -245,7 +245,7 @@ RECUR    | TTh
 TSTART   | 1
 TEND     | 3
 SUMMARY  | lab
-LOCATION | @ CS Bldg
+SUMMARY  | @ CS Bldg
 PERSON   | partner
 events: all
 status: ok
@@ -261,7 +261,7 @@ note: "sun star" is an animal
 === hc2f7665851 [kara] ===
 > Pottery class at the downtown Annex studio thurs nights, 7PM
 SUMMARY  | Pottery class
-LOCATION | at the downtown Annex studio
+SUMMARY  | at the downtown Annex studio
 RECUR    | thurs
 TSTART   | 7PM
 events: all
@@ -316,7 +316,7 @@ flags: negated_recurrence all_day
 === hc6d3a557c4 [sarah] ===
 > Oct 21-23 conference at the convention center
 SUMMARY  | conference
-LOCATION | at the convention center
+SUMMARY  | at the convention center
 events: all
 status: unrepresentable
 flags:
@@ -328,7 +328,7 @@ SUMMARY  | Class
 RECUR    | MWF
 TSTART   | 8
 TEND     | 10
-LOCATION | Rm 201
+SUMMARY  | Rm 201
 PERSON   | sir jefferson
 events: all
 status: ok
@@ -338,7 +338,7 @@ flags: ampm_ambiguous ampm_inferred
 > Thanksgiving eve: staff Potluck in the back room
 DATE     | Thanksgiving
 SUMMARY  | staff Potluck
-LOCATION | in the back room
+SUMMARY  | in the back room
 events: all
 status: ok
 flags: named_date all_day
@@ -393,7 +393,7 @@ flags: bounded_count time_approximate
 DATE     | Sept 3
 TSTART   | 2pm
 SUMMARY  | thesis defense
-LOCATION | at room 4
+SUMMARY  | at room 4
 events: all
 status: ok
 flags: missing_end_time
@@ -411,7 +411,7 @@ flags: relative_date missing_summary missing_end_time
 RECUR    | MWF
 TSTART   | 6
 SUMMARY  | lap swim
-LOCATION | at the Rec
+SUMMARY  | at the Rec
 TEND     | 7
 events: all
 status: ok
@@ -422,7 +422,7 @@ flags: ampm_ambiguous ampm_inferred
 SUMMARY  | faculty assembly
 TSTART   | 8
 DURATION | for 2 hours
-LOCATION | in the auditorium
+SUMMARY  | in the auditorium
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred duration_given missing_date
@@ -432,7 +432,7 @@ flags: ampm_ambiguous ampm_inferred duration_given missing_date
 RECUR    | MWF
 TSTART   | 8
 TEND     | 10
-LOCATION | Rm 201
+SUMMARY  | Rm 201
 SUMMARY  | lab
 events: all
 status: ok
@@ -480,7 +480,7 @@ SUMMARY  | meeting
 PERSON   | sir jefferson
 DATE     | monday
 TSTART   | 10am
-LOCATION | in the main office room 201
+SUMMARY  | in the main office room 201
 events: all
 status: ok
 flags: missing_end_time recurrence_ambiguous
@@ -491,7 +491,7 @@ SUMMARY  | Class
 RECUR    | MWF
 TSTART   | 8
 TEND     | 10
-LOCATION | Rm 201
+SUMMARY  | Rm 201
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred
@@ -501,7 +501,7 @@ flags: ampm_ambiguous ampm_inferred
 RECUR    | MWF
 TSTART   | 8AM
 SUMMARY  | LECTURE SERIES
-LOCATION | IN ROOM 201
+SUMMARY  | IN ROOM 201
 events: all
 status: ok
 flags: missing_end_time
@@ -542,10 +542,10 @@ flags: negated_recurrence excluded_dates all_day
 > tmrw meet the sneaker buyer at the mall then deliv the bars by 6pm
 DATE     | tmrw
 SUMMARY  | meet the sneaker buyer
-LOCATION | at the mall
+SUMMARY  | at the mall
 SUMMARY  | deliv the bars
 TSTART   | 6pm
-events: SUMMARY#1 DATE LOCATION ; SUMMARY#2 DATE TSTART
+events: SUMMARY#1 DATE ; SUMMARY#2 DATE TSTART
 status: ok
 flags: multi_event relative_date missing_end_time
 note: two events sharing a date -- the first has no time, the second has 6pm
@@ -572,7 +572,7 @@ flags: recurrence_ambiguous
 > FIELD STATION VAN LEAVES 5:45AM FROM THE MARINE LAB LOT
 SUMMARY  | FIELD STATION VAN LEAVES
 TSTART   | 5:45AM
-LOCATION | FROM THE MARINE LAB LOT
+SUMMARY  | FROM THE MARINE LAB LOT
 events: all
 status: ok
 flags: missing_date missing_end_time
@@ -601,7 +601,7 @@ flags: ampm_ambiguous ampm_inferred duration_given
 RECUR    | every other sun
 SUMMARY  | mass
 PERSON   | Mom
-LOCATION | over video
+SUMMARY  | over video
 TSTART   | 10am
 events: all
 status: ok
@@ -619,7 +619,7 @@ flags: bounded_count all_day
 === hed78b2b824 [kara] ===
 > Flu Shot clinic at the pharmacy runs the whole week Before thanksgiving
 SUMMARY  | Flu Shot clinic
-LOCATION | at the pharmacy
+SUMMARY  | at the pharmacy
 DATE     | the whole week Before thanksgiving
 events: all
 status: unrepresentable
@@ -652,7 +652,7 @@ flags: multi_event all_day recurrence_ambiguous
 RECUR    | every sat
 TSTART   | 6am
 SUMMARY  | tree planting
-LOCATION | at the watershed
+SUMMARY  | at the watershed
 BOUND    | til the feast in oCtober
 events: all
 status: ok
@@ -737,7 +737,7 @@ flags: ampm_ambiguous ampm_inferred recurrence_ambiguous
 === hfa459d67ad [sarah] ===
 > Lab @ CS Bldg every Tuesday at 1pm
 SUMMARY  | Lab
-LOCATION | @ CS Bldg
+SUMMARY  | @ CS Bldg
 RECUR    | every Tuesday
 TSTART   | 1pm
 events: all
@@ -762,7 +762,7 @@ flags: named_date missing_end_time
 
 === hfeb92d7aaa [sebastian] ===
 > Dining hall breakfast every day except Sat, closed til 11
-LOCATION | Dining hall
+SUMMARY  | Dining hall
 SUMMARY  | breakfast
 RECUR    | every day
 RECUR    | except Sat

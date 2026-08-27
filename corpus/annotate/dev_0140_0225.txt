@@ -10,7 +10,7 @@
 RECUR    | MTWTHF
 TSTART   | 7AM
 SUMMARY  | MASS
-LOCATION | AT THE CHAPEL
+SUMMARY  | AT THE CHAPEL
 events: all
 status: ok
 flags: missing_end_time
@@ -105,7 +105,7 @@ flags: missing_date missing_end_time
 RECUR    | TR
 TSTART   | 6
 SUMMARY  | spin class
-LOCATION | Downtown
+SUMMARY  | Downtown
 TEND     | 7
 events: all
 status: ok
@@ -116,7 +116,7 @@ flags: ampm_ambiguous ampm_inferred
 SUMMARY  | Seminar
 TSTART   | 8
 TEND     | 12
-LOCATION | at the main hall
+SUMMARY  | at the main hall
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred missing_date
@@ -157,7 +157,7 @@ note: "b4 lunch" is a rough qualifier with no slot
 === h7bdbbbed52 [kylar] ===
 > Meeting in Room 201 on Monday at 10am with Professor Smith
 SUMMARY  | Meeting
-LOCATION | in Room 201
+SUMMARY  | in Room 201
 DATE     | Monday
 TSTART   | 10am
 PERSON   | Professor Smith
@@ -189,7 +189,7 @@ RECUR    | mWf
 TSTART   | 10Am
 SUMMARY  | cCc100
 PERSON   | sIr JeFfErSoN
-LOCATION | in room 201
+SUMMARY  | in room 201
 events: all
 status: ok
 flags: missing_end_time
@@ -246,7 +246,7 @@ RECUR    | Every Tues
 TSTART   | 6pm
 DURATION | for 90 mins
 SUMMARY  | small biz bookkeeping
-LOCATION | at the comm college
+SUMMARY  | at the comm college
 events: all
 status: ok
 flags: duration_given
@@ -276,7 +276,7 @@ flags: ampm_ambiguous ampm_inferred
 RECUR    | TTH
 TSTART   | 1PM
 SUMMARY  | LAB CLASS
-LOCATION | AT CS BUILDING ROOM 201
+SUMMARY  | AT CS BUILDING ROOM 201
 events: all
 status: ok
 flags: missing_end_time
@@ -326,7 +326,7 @@ flags: all_day
 > COMPANY SHUTTLE PICKUP 6AM AT GATE 2 PARKING
 SUMMARY  | COMPANY SHUTTLE PICKUP
 TSTART   | 6AM
-LOCATION | AT GATE 2 PARKING
+SUMMARY  | AT GATE 2 PARKING
 events: all
 status: ok
 flags: missing_date missing_end_time
@@ -373,7 +373,7 @@ SUMMARY  | Dinner
 PERSON   | the girls
 DATE     | tmrw
 TSTART   | 7pm
-LOCATION | in bgc
+SUMMARY  | in bgc
 events: all
 status: ok
 flags: relative_date missing_end_time
@@ -413,7 +413,7 @@ flags: multi_event ampm_ambiguous ampm_inferred missing_end_time
 RECUR    | MWF
 TSTART   | 8
 TEND     | 10
-LOCATION | Rm 201
+SUMMARY  | Rm 201
 SUMMARY  | class
 PERSON   | sir jefferson
 events: all
@@ -440,7 +440,7 @@ note: "may" is the modal verb; "3" is a window number
 > VENDOR SHUTTLE DEPARTS 5:30AM FROM LOT C, GATE 4
 SUMMARY  | VENDOR SHUTTLE DEPARTS
 TSTART   | 5:30AM
-LOCATION | FROM LOT C, GATE 4
+SUMMARY  | FROM LOT C, GATE 4
 events: all
 status: ok
 flags: missing_date missing_end_time
@@ -458,7 +458,7 @@ flags: duration_given missing_date
 > every other sunday bulk cook adobo n chicken at home, 6am start
 RECUR    | every other sunday
 SUMMARY  | bulk cook adobo n chicken
-LOCATION | at home
+SUMMARY  | at home
 TSTART   | 6am
 events: all
 status: ok
@@ -468,7 +468,7 @@ flags: missing_end_time
 > every other thurs supper club at my place, prep starts 4pm
 RECUR    | every other thurs
 SUMMARY  | supper club
-LOCATION | at my place
+SUMMARY  | at my place
 TSTART   | 4pm
 events: all
 status: ok
@@ -480,7 +480,7 @@ note: 4pm is when prep starts, arguably not when the supper club starts
 RECUR    | mOnDaY tO fRiDaY
 RECUR    | except holidays
 SUMMARY  | classes
-LOCATION | in room 201
+SUMMARY  | in room 201
 events: all
 status: ok
 flags: negated_recurrence excluded_dates all_day
@@ -543,7 +543,7 @@ flags: ampm_ambiguous ampm_inferred relative_date missing_end_time
 > tmrw i'm styling the engagement party at the barn, load in by 3
 DATE     | tmrw
 SUMMARY  | styling the engagement party
-LOCATION | at the barn
+SUMMARY  | at the barn
 TSTART   | 3
 events: all
 status: ok
@@ -554,7 +554,7 @@ note: "load in by 3" is the only clock time; read as the start
 > SUNDAY DINNER AT NELLS PLACE EVERY WEEK, 4 MORE BEFORE SHE GRADUATES
 RECUR    | SUNDAY
 SUMMARY  | DINNER
-LOCATION | AT NELLS PLACE
+SUMMARY  | AT NELLS PLACE
 RECUR    | EVERY WEEK
 BOUND    | 4 MORE
 events: all
@@ -568,7 +568,7 @@ SUMMARY  | meeting
 DATE     | monday
 TSTART   | 6
 DURATION | for 90 mins
-LOCATION | in conference room a
+SUMMARY  | in conference room a
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred duration_given recurrence_ambiguous
@@ -614,7 +614,7 @@ flags: multi_event all_day recurrence_ambiguous
 DATE     | sat
 TSTART   | 10
 SUMMARY  | ledger's nail trim + shots
-LOCATION | at the mobile vet
+SUMMARY  | at the mobile vet
 TEND     | 12:30
 events: all
 status: ok
@@ -651,7 +651,7 @@ note: RECUR not DATE -- the count bound implies repetition
 RECUR    | MWF
 TSTART   | 8AM
 SUMMARY  | FACULTY MEETING
-LOCATION | AT THE CONFERENCE ROOM
+SUMMARY  | AT THE CONFERENCE ROOM
 events: all
 status: ok
 flags: missing_end_time
@@ -695,7 +695,7 @@ note: conditional recurrence keyed to an external event
 DATE     | sun
 TSTART   | 1pm
 SUMMARY  | tank Cleaning
-LOCATION | at the hendersons
+SUMMARY  | at the hendersons
 DURATION | for 2 hrs
 events: all
 status: ok
@@ -721,7 +721,7 @@ flags: bounded_count all_day recur_with_anchor
 === hac585e62bf [kara] ===
 > annual physical + bloodwork at the clinic tues 8:45 to 10:15
 SUMMARY  | annual physical + bloodwork
-LOCATION | at the clinic
+SUMMARY  | at the clinic
 DATE     | tues
 TSTART   | 8:45
 TEND     | 10:15
@@ -797,7 +797,7 @@ note: question about when, not a scheduling statement
 > All Souls Day: potluck asSembly for the whole clan, ancestral house
 DATE     | All Souls Day
 SUMMARY  | potluck asSembly
-LOCATION | ancestral house
+SUMMARY  | ancestral house
 events: all
 status: ok
 flags: named_date all_day

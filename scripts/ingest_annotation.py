@@ -24,6 +24,8 @@ HEAD_RE = re.compile(r"^===\s*(\S+)\s*\[([^\]]+)\]\s*===")
 SPAN_RE = re.compile(r"^([A-Z_]+)\s*\|\s*(.*?)\s*(?:#(\d+))?\s*$")
 KV_RE = re.compile(r"^(events|status|flags|note)\s*:\s*(.*)$", re.I)
 
+_CONNECT = re.compile(r"^[\s,\-@:]*(?:with|w/|w|and|at|in|on|of|the|a|an)?[\s,\-@:]*$", re.I)
+
 problems: list[str] = []
 
 
@@ -64,6 +66,19 @@ def parse_file(path: pathlib.Path) -> list[dict]:
                 continue
             spans.append(Span(i=len(spans), type=typ, start=loc[0], end=loc[1], text=val))
         spans.sort(key=lambda s: s.start)
+        # One SUMMARY span per contiguous non-temporal region. Annotators
+        # naturally tag "mass" and "at the chapel" separately; with LOCATION
+        # gone they are one title fragment, and the parser emits them as one.
+        merged: list[Span] = []
+        for s in spans:
+            if (merged and merged[-1].type == "SUMMARY" and s.type == "SUMMARY"
+                    and _CONNECT.match(text[merged[-1].end:s.start])):
+                prev = merged[-1]
+                merged[-1] = Span(i=0, type="SUMMARY", start=prev.start,
+                                  end=s.end, text=text[prev.start:s.end])
+            else:
+                merged.append(s)
+        spans = merged
         for n, s in enumerate(spans):
             s.i = n
 

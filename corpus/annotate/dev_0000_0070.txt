@@ -17,7 +17,7 @@
 > Good Friday: no Meat in the dining hall, fish line only
 DATE     | Good Friday
 SUMMARY  | no Meat
-LOCATION | in the dining hall
+SUMMARY  | in the dining hall
 events: all
 status: ok
 flags: named_date all_day
@@ -73,7 +73,7 @@ note: RECUR not DATE -- the count bound implies repetition
 === h0591e46cb3 [sam] ===
 > physical therapy for my knee at the clinic tues 9:30 to 11 am
 SUMMARY  | physical therapy for my knee
-LOCATION | at the clinic
+SUMMARY  | at the clinic
 DATE     | tues
 TSTART   | 9:30
 TEND     | 11 am
@@ -87,7 +87,7 @@ RECUR    | Biweekly
 SUMMARY  | staff meeting
 RECUR    | every other Tuesday
 TSTART   | 10am
-LOCATION | in conference room
+SUMMARY  | in conference room
 events: all
 status: ok
 flags: missing_end_time
@@ -128,7 +128,7 @@ flags: missing_date missing_end_time
 SUMMARY  | Study group
 TSTART   | 7pm
 DURATION | for 2hrs
-LOCATION | at lib
+SUMMARY  | at lib
 events: all
 status: ok
 flags: duration_given missing_date
@@ -171,7 +171,7 @@ flags: ampm_ambiguous ampm_inferred duration_given missing_date
 === h0b1f7b81f5 [sebastian] ===
 > Flu Shot table at the rec center is up all of Homecoming week
 SUMMARY  | Flu Shot table
-LOCATION | at the rec center
+SUMMARY  | at the rec center
 events: all
 status: unresolvable
 flags:
@@ -207,7 +207,7 @@ note: cancellation -- "scratch" removes an event rather than creating one
 > every other fri praise nite at Church, 7pm start
 RECUR    | every other fri
 SUMMARY  | praise nite
-LOCATION | at Church
+SUMMARY  | at Church
 TSTART   | 7pm
 events: all
 status: ok
@@ -249,7 +249,7 @@ flags: relative_date missing_summary missing_end_time
 DATE     | Sept 3
 TSTART   | 2pm
 SUMMARY  | defense of thesis
-LOCATION | in room 301
+SUMMARY  | in room 301
 events: all
 status: ok
 flags: missing_end_time
@@ -345,7 +345,7 @@ flags: ampm_ambiguous ampm_inferred duration_given missing_date
 === h223032f4ae [sarah] ===
 > Meeting on Zoom 3pm w the dept head
 SUMMARY  | Meeting
-LOCATION | on Zoom
+SUMMARY  | on Zoom
 TSTART   | 3pm
 PERSON   | the dept head
 events: all
@@ -418,7 +418,7 @@ flags: time_approximate negated_recurrence
 DATE     | monday
 TSTART   | 8
 SUMMARY  | lecture series on economics
-LOCATION | room 201
+SUMMARY  | room 201
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred missing_end_time recurrence_ambiguous
@@ -428,7 +428,7 @@ flags: ampm_ambiguous ampm_inferred missing_end_time recurrence_ambiguous
 RECUR    | TTh
 TSTART   | 6
 SUMMARY  | baLl
-LOCATION | at the covered court
+SUMMARY  | at the covered court
 TEND     | 8
 events: all
 status: ok
@@ -439,7 +439,7 @@ note: "til 8" is an END TIME here, not a series bound -- bare hour, not a date
 > every other thurs we do a big pot of soemthing at gus place, 7ish
 RECUR    | every other thurs
 SUMMARY  | we do a big pot of soemthing
-LOCATION | at gus place
+SUMMARY  | at gus place
 TSTART   | 7ish
 events: all
 status: ok
@@ -482,7 +482,7 @@ RECUR    | Every Wed
 TSTART   | 6pm
 DURATION | for 2 hrs
 SUMMARY  | NASM review class
-LOCATION | at the training center
+SUMMARY  | at the training center
 events: all
 status: ok
 flags: duration_given
@@ -535,7 +535,7 @@ flags: missing_date missing_end_time
 === h3186c2664d [sebastian] ===
 > dentist for the chipped one at the clinic on friday, 2 - 3:15
 SUMMARY  | dentist for the chipped one
-LOCATION | at the clinic
+SUMMARY  | at the clinic
 DATE     | friday
 TSTART   | 2
 TEND     | 3:15
@@ -641,7 +641,7 @@ RECUR    | Every day
 RECUR    | except Sunday
 TSTART   | 6am
 SUMMARY  | mass
-LOCATION | at the chapel
+SUMMARY  | at the chapel
 events: all
 status: ok
 flags: negated_recurrence missing_end_time

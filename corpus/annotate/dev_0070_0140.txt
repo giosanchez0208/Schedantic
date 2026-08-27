@@ -24,7 +24,7 @@ note: asking when something is, not scheduling it
 > TTh work study hours in the Front office, 8am before class
 RECUR    | TTh
 SUMMARY  | work study hours
-LOCATION | in the Front office
+SUMMARY  | in the Front office
 TSTART   | 8am
 events: all
 status: ok
@@ -55,7 +55,7 @@ note: RECUR not DATE -- the count bound implies repetition
 === h3e39b12602 [sebastian] ===
 > Bass practice in theos garage every tues night at 9PM sharp
 SUMMARY  | Bass practice
-LOCATION | in theos garage
+SUMMARY  | in theos garage
 RECUR    | every tues
 TSTART   | 9PM
 events: all
@@ -143,7 +143,7 @@ note: bare "12" reads as noon rather than midnight
 === h437eb3da81 [sarah] ===
 > Meeting on Zoom 3pm
 SUMMARY  | Meeting
-LOCATION | on Zoom
+SUMMARY  | on Zoom
 TSTART   | 3pm
 events: all
 status: ok
@@ -231,7 +231,7 @@ flags: ampm_ambiguous ampm_inferred missing_date missing_end_time
 === h4c52955dae [sam] ===
 > Feeding program at the village hall every Sat 7am for 8 wks only
 SUMMARY  | Feeding program
-LOCATION | at the village hall
+SUMMARY  | at the village hall
 RECUR    | every Sat
 TSTART   | 7am
 BOUND    | for 8 wks
@@ -263,7 +263,7 @@ flags: multi_event all_day recurrence_ambiguous
 > every 2nd sun hospitality Team at church, 8am call
 RECUR    | every 2nd sun
 SUMMARY  | hospitality Team
-LOCATION | at church
+SUMMARY  | at church
 TSTART   | 8am
 events: all
 status: ok
@@ -294,7 +294,7 @@ SUMMARY  | gYm
 RECUR    | MWF
 TSTART   | 8
 TEND     | 10
-LOCATION | @ CS Bldg
+SUMMARY  | @ CS Bldg
 events: all
 status: ok
 flags: ampm_ambiguous ampm_inferred
@@ -331,7 +331,7 @@ note: "at some point this Quarter" pins nothing
 > mEeTiNg with Prof in Room 201 MWF 8-10 dont be late please
 SUMMARY  | mEeTiNg
 PERSON   | Prof
-LOCATION | in Room 201
+SUMMARY  | in Room 201
 RECUR    | MWF
 TSTART   | 8
 TEND     | 10
@@ -583,7 +583,7 @@ RECUR    | MTWThF
 RECUR    | except holidays
 TSTART   | 8AM
 SUMMARY  | Staff meeting
-LOCATION | at the conference room
+SUMMARY  | at the conference room
 events: all
 status: unrepresentable
 flags: negated_recurrence

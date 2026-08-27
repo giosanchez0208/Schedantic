@@ -527,7 +527,6 @@ def l1_to_l2(l1: L1, policy: Policy = DEFAULT_POLICY) -> tuple[L2, Trace]:
             duration_minutes=duration if not end_val else None,
             rrule=rrule,
             attendees=list(persons),
-            location=(pick("LOCATION") or [None])[0],
             exclude=exclusions,
         ))
 

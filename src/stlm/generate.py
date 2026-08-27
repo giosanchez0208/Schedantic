@@ -213,7 +213,7 @@ def apply_casing(rng: random.Random, s: str, mode: str) -> str:
 # swamp the signal on the slots that actually matter.
 _TYPO_SCALE = {
     "TSTART": 0.35, "TEND": 0.35, "RECUR": 0.4, "DATE": 0.5, "BOUND": 0.5,
-    "DURATION": 0.5, "SUMMARY": 1.0, "PERSON": 1.0, "LOCATION": 1.0, None: 0.2,
+    "DURATION": 0.5, "SUMMARY": 1.0, "PERSON": 1.0, None: 0.2,
 }
 
 
@@ -517,7 +517,6 @@ def generate_one(rng: random.Random, idx: int, cell: dict | None = None,
                 duration_minutes=duration,
                 rrule=e_rr,
                 attendees=[person] if person else [],
-                location=location,
             )
         )
 
@@ -584,7 +583,7 @@ def generate_one(rng: random.Random, idx: int, cell: dict | None = None,
         content.append(Chunk(person, "PERSON", all_ev))
     if location:
         content.append(Chunk(" @ " if rng.random() < 0.5 else " at ", None))
-        content.append(Chunk(location, "LOCATION", all_ev))
+        content.append(Chunk(location, "SUMMARY", all_ev))
 
     order = cell["slot_order"]
     if order == "temporal_leading":

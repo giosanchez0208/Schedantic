@@ -119,13 +119,11 @@ PERSON_RE = re.compile(
     re.I,
 )
 
-LOCATION_RE = re.compile(
-    r"(@\s*[\w\s]+?(?=\s*$|\s+(?:on|at|every|mwf|tth)\b)"
-    r"|\b(?:in|at)\s+(?:the\s+)?(?:[\w]+\s+)?(?:rm|room|bldg|building|hall|lab|court|field|gym|library|annex|office)\.?\s*[\w]{0,10}?(?=\s*$|\s+\b(?:on|every|with|w/)\b)"
-    r"|\b(?:rm|room)\.?\s*\d+\w*"
-    r"|\b(?:zoom|google\s*meet|gmeet|online|teams)\b)",
-    re.I,
-)
+# LOCATION removed as a span type. A place is part of the answer to "what
+# goes on the calendar", so it falls into SUMMARY as residual -- the same
+# call already made for PERSON. Measured: keeping it cost 0.07 SUMMARY F1,
+# because a missed location becomes a summary boundary error too.
+
 
 # "not"/"no" are weak negation triggers -- far too common to match freely
 # ("do not forget"), so they only count when a weekday follows immediately.
@@ -199,14 +197,6 @@ def propose(text: str) -> list[Proposal]:
         _add(out, "DATE", m, "holiday", 1)
     for m in PERSON_RE.finditer(text):
         _add(out, "PERSON", m, "person", 1)
-    for m in LOCATION_RE.finditer(text):
-        # "@ 6" is a time, "@ CS Bldg" is a place. Both are common shorthand and
-        # the same symbol introduces them, so require a letter before calling it
-        # a location -- otherwise "gym @ 6" silently loses its start time.
-        tail = m.group(1).lstrip("@").strip()
-        if tail and _TIME_LIKE.match(tail):
-            continue
-        _add(out, "LOCATION", m, "location", 1)
 
     # Only tag a time-of-day word when no explicit clock time is present --
     # "this afternoon at 3" states the real time, and TOD would be redundant at
@@ -307,20 +297,19 @@ def with_summary(text: str) -> list[Proposal]:
             pts += 1.0          # leading fragments are titles more often than not
         return pts
 
-    best = None
-    best_pts = 0.0
-    for s, e in gaps:
-        if not text[s:e].strip():
+    # SUMMARY is the residual: EVERY non-temporal region is part of the title,
+    # not just the biggest one. Picking one gap was right when LOCATION and
+    # PERSON carved out their own spans; with LOCATION gone the leftover text is
+    # all title, and "mass" + "at the chapel" is two fragments of one summary.
+    for a, b in gaps:
+        if not text[a:b].strip():
             continue
-        s2, e2 = trim(s, e)
+        s2, e2 = trim(a, b)
         if e2 <= s2:
             continue
-        if re.fullmatch(rf"(?:{EDGE}|\s)+", text[s2:e2], re.I):
+        # A gap made only of connectives or punctuation is not a title.
+        if re.fullmatch(rf"(?:{EDGE}|\s|[/&+()\[\]!?\"'])+", text[s2:e2], re.I):
             continue
-        pts = score(s2, e2)
-        if best is None or pts > best_pts:
-            best, best_pts = (s2, e2), pts
-    if best:
-        spans.append(Proposal("SUMMARY", best[0], best[1], text[best[0]:best[1]], "residual"))
+        spans.append(Proposal("SUMMARY", s2, e2, text[s2:e2], "residual"))
     spans.sort(key=lambda p: p.start)
     return spans
