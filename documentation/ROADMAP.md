@@ -65,6 +65,8 @@ Everything downstream of M5 is speculation until M4a exists.
 ## Open questions
 
 Tracked in [IR_SPEC_v0.md](IR_SPEC_v0.md), answered in [FINDINGS.md](FINDINGS.md).
+Everything currently decided by default or judgement rather than evidence:
+[OPEN_DECISIONS.md](OPEN_DECISIONS.md).
 
 | State | OQs |
 |---|---|
