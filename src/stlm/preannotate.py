@@ -48,14 +48,19 @@ EVERY_RE = re.compile(
     re.I,
 )
 
+# The lookbehind is per-branch on purpose. A time carrying an explicit am/pm/nn
+# marker is unambiguous even when it sits flush against a letter, so "Mon12pm"
+# and "Wed5pm" parse -- people really do write schedules with no spaces. A BARE
+# number gets no such licence, or "Room1030" becomes 10:30.
 TIME_RE = re.compile(
-    r"(?<![\w:])("
-    r"\d{1,2}:\d{2}\s*(?:[ap]\.?m\.?)?"          # 8:30am / 08:30
-    r"|\d{1,2}\s*(?:[ap]\.?m\.?|nn|mn|noon)"      # 8am / 12nn
-    r"|\d{3,4}\s*h"                               # 0800h
-    r"|(?:[01]\d|2[0-3])[0-5]\d(?![\d:])"         # 0800 / 1200 military
-    r"|\bnoon\b|\bmidnight\b"
-    r"|\d{1,2}"                                   # bare hour, last resort
+    r"("
+    r"(?<![\d:])\d{1,2}:\d{2}\s*[ap]\.?m\.?"          # Mon8:30am
+    r"|(?<![\d:])\d{1,2}\s*(?:[ap]\.?m\.?|nn|mn|noon)"  # Mon12pm / 12nn
+    r"|(?<![\w:])\d{1,2}:\d{2}"                        # 08:30
+    r"|(?<![\w:])\d{3,4}\s*h"                          # 0800h
+    r"|(?<![\w:])(?:[01]\d|2[0-3])[0-5]\d(?![\d:])"    # 0800 / 1200 military
+    r"|(?<![\w:])(?:noon|midnight)"
+    r"|(?<![\w:])\d{1,2}"                              # bare hour, last resort
     r")(?![\w:])",
     re.I,
 )
@@ -243,8 +248,15 @@ def propose(text: str) -> list[Proposal]:
     # Ratified in ANNOTATION_GUIDE.md; the asymmetric harm argument is there.
     from .normalize import _daycodes as _dc
 
-    repeats = any(p.type == "BOUND" for p in chosen) or any(
-        p.type == "RECUR" and _REPEAT_MARKER.search(p.text) for p in chosen)
+    daycodes = [p for p in chosen if p.type == "RECUR" and p.rule == "daycode"]
+    repeats = (
+        any(p.type == "BOUND" for p in chosen)
+        or any(p.type == "RECUR" and _REPEAT_MARKER.search(p.text) for p in chosen)
+        # A second day slot in the SAME segment means one weekly pattern, not two
+        # one-off dates -- "Lab Mon12pm Wed5pm". Only sound after segmentation,
+        # because "Monday call X, Wednesday call Y" is two separate single dates
+        # and must never see both spans at once.
+        or len(daycodes) > 1)
     if not repeats:
         for p in chosen:
             if p.type == "RECUR" and p.rule == "daycode" and len(_dc(p.text)) == 1:
