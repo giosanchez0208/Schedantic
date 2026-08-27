@@ -56,3 +56,6 @@ htmlcov/
 # and human_raw.jsonl regenerates from corpus/contrib/*.txt, so both stay ignored.
 # The harvested reference corpus does NOT regenerate -- keep it.
 !corpus/harvested.jsonl
+
+# Model checkpoints regenerate from scripts/train.py at a fixed seed.
+checkpoints/

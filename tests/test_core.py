@@ -16,7 +16,7 @@ from stlm.convert import (DEFAULT_POLICY, Policy, l2_to_jcal, occurrence_set,
 from stlm.generate import generate
 from stlm.normalize import (l1_to_l2, normalize_bound, normalize_date,
                             normalize_end_time, normalize_recur, normalize_time, parse)
-from stlm.ir import L1, L2, DateTimeSpec, L2Event, RRule
+from stlm.ir import L1, L2, DateTimeSpec, L2Event, RRule, Span
 from stlm.score import rrule_equivalence, span_prf, l2_exact_match
 
 # Fixed reference time for every test. 2026-08-26 is a Wednesday.
@@ -428,6 +428,59 @@ def test_refusal_frames():
           str({r["l1"]["status"] for r in rows}))
 
 
+def test_bio_tagging_round_trip():
+    print("\n[M6] L1 spans <-> per-byte BIO tags")
+    from stlm.ir import read_jsonl as _rj
+    from stlm.tagging import (N_LABELS, char_to_byte_offsets, decode, encode,
+                              round_trip_ok)
+
+    check(f"17 labels for 8 span types plus O (got {N_LABELS})", N_LABELS == 17,
+          str(N_LABELS))
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    gold = [L1.from_json(r) for r in _rj(root / "corpus" / "gold_l1.jsonl")]
+    bad = [g for g in gold if not round_trip_ok(g)]
+    check(f"every gold row round-trips ({len(gold)-len(bad)}/{len(gold)})",
+          not bad, str([g.text[:40] for g in bad[:3]]))
+
+    syn = [L1.from_json(r["l1"]) for r in generate(2000, seed=42, profile="balanced")]
+    bad = [g for g in syn if not round_trip_ok(g)]
+    check(f"every generated row round-trips ({len(syn)-len(bad)}/{len(syn)})",
+          not bad, str([g.text[:40] for g in bad[:3]]))
+
+    # Character offsets are not byte offsets. Two gold rows already contain a
+    # multi-byte character, and getting this wrong would shift every label after
+    # it -- silently, because the tags would still be well-formed.
+    text = "café tmrw 3pm"
+    off = char_to_byte_offsets(text)
+    check("multi-byte char shifts the byte offsets", off[4] == 5, str(off[:6]))
+    l1 = L1(id="u", text=text, spans=[
+        Span(i=0, type="SUMMARY", start=0, end=4, text="café"),
+        Span(i=1, type="DATE", start=5, end=9, text="tmrw"),
+        Span(i=2, type="TSTART", start=10, end=13, text="3pm")],
+        event_groups=[[0, 1, 2]], status="ok")
+    raw, tags = encode(l1)
+    check("byte tag array matches the utf-8 length", len(tags) == len(raw),
+          f"{len(tags)} vs {len(raw)}")
+    got = decode(text, tags)
+    check("non-ascii span survives the round trip",
+          [(s.type, s.text) for s in got] ==
+          [("SUMMARY", "café"), ("DATE", "tmrw"), ("TSTART", "3pm")],
+          str([(s.type, s.text) for s in got]))
+
+    # A model does not emit well-formed BIO. Decoding must not throw away a
+    # confidently tagged region just because it opens with I- instead of B-.
+    from stlm.tagging import LABEL2ID
+    stray = [LABEL2ID["O"]] * len(raw)
+    for i in range(6, 10):
+        stray[i] = LABEL2ID["I-DATE"]
+    got = decode(text, stray)
+    check("a bare I- run still decodes to a span",
+          [(s.type, s.text) for s in got] == [("DATE", "tmrw")],
+          str([(s.type, s.text) for s in got]))
+
+
+
 def test_daysets():
     print("\n[augment] weekday-set rendering round-trips")
     import random as _r
@@ -531,6 +584,7 @@ if __name__ == "__main__":
     test_event_segmentation()
     test_negative_frames()
     test_refusal_frames()
+    test_bio_tagging_round_trip()
     test_daysets()
     test_holidays()
     print("\n" + "=" * 60)

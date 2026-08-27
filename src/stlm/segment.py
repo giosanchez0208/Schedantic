@@ -132,3 +132,47 @@ def spans_and_groups(text: str) -> tuple[list, list[list[int]]]:
         groups.extend(temporal_groups(local))
 
     return all_spans, groups
+
+
+def groups_for_spans(text: str, spans: list) -> list[list[int]]:
+    """Event groups for spans that ALREADY exist -- the model's, not the rules'.
+
+    spans_and_groups() re-runs the rule proposer on each fragment, which is
+    right when the rules are the source of truth. At inference the model has
+    already tagged the whole string, so re-tagging it with regexes would throw
+    away the judgement that was the entire point of training something.
+
+    Same two stages and the same tests, applied to a given span list: cut at a
+    delimiter only where both sides own a day slot and a subject, then split
+    each segment where a defining slot repeats with another one in between.
+    """
+    if not spans:
+        return []
+
+    ordered = sorted(spans, key=lambda s: s.start)
+
+    def owns_event(subset: list) -> bool:
+        types = {s.type for s in subset}
+        return bool(types & DAY) and "SUMMARY" in types
+
+    # Candidate cuts are delimiters that fall BETWEEN two spans, never inside one.
+    cuts = [0]
+    for m in DELIM.finditer(text):
+        if any(s.start < m.end() and m.start() < s.end for s in ordered):
+            continue
+        left = [s for s in ordered if s.end <= m.start()]
+        right = [s for s in ordered if s.start >= m.end()]
+        if owns_event(left[len(cuts) - 1:] if len(cuts) > 1 else left) and owns_event(right):
+            cuts.append(m.end())
+
+    segments: list[list] = []
+    for k, start in enumerate(cuts):
+        stop = cuts[k + 1] if k + 1 < len(cuts) else len(text) + 1
+        seg = [s for s in ordered if start <= s.start < stop]
+        if seg:
+            segments.append(seg)
+
+    out: list[list[int]] = []
+    for seg in segments:
+        out.extend(temporal_groups(seg))
+    return out

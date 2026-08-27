@@ -6,6 +6,8 @@ requires-python = ">=3.11"
 dependencies = [
     "python-dateutil>=2.9.0",
     "icalendar>=6.0.0",
+    "torch>=2.13.0",
+    "numpy>=2.4.6",
 ]
 
 [build-system]
