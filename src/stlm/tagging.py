@@ -132,13 +132,21 @@ def round_trip_ok(l1: L1) -> bool:
     return [(s.type, s.start, s.end) for s in got] == want
 
 
+# A short letter run straight after digits belongs WITH those digits: "8am" is
+# one token, "15th" is one token. Splitting them let the decoder label the two
+# halves differently, which is how "walk the dog 8am" came out as DATE "8" plus
+# TSTART "am". Letter-then-digit still splits, because "Mon12pm" has to.
+_GLUED_SUFFIX = {"am", "pm", "nn", "mn", "a", "p", "h", "st", "nd", "rd", "th",
+                 "hrs", "hr", "min", "mins", "m", "s"}
+
+
 def chunks(text: str) -> list[tuple[int, int]]:
     """Character-space chunks a span boundary is allowed to fall on.
 
-    A maximal run of letters, or of digits, or a single other character. The
-    letter/digit split is what lets "Mon12pm" separate into "Mon" and "12pm"
-    without a space -- 8 of the 1188 gold spans need exactly that, and 99.3% of
-    the rest already land on whitespace.
+    A maximal run of letters, or of digits, or a single other character -- with
+    the exception above, which keeps a unit suffix attached to its number. The
+    letter/digit split is what lets "Mon12pm" separate without a space; 8 of the
+    1188 gold spans need exactly that, and 99.3% of the rest land on whitespace.
     """
     out: list[tuple[int, int]] = []
     i = 0
@@ -152,6 +160,11 @@ def chunks(text: str) -> list[tuple[int, int]]:
             j = i
             while j < len(text) and text[j].isdigit():
                 j += 1
+            k = j
+            while k < len(text) and text[k].isalpha():
+                k += 1
+            if k > j and text[j:k].lower() in _GLUED_SUFFIX:
+                j = k
         else:
             j = i + 1
         out.append((i, j))

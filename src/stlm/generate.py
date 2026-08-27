@@ -94,14 +94,17 @@ AXIS_PRIOR: dict[str, list[tuple[str, float]]] = {
     "recurrence_class": [
         ("none", 35.0), ("weekly_multi", 23.0), ("weekly_single", 21.0),
         ("daily", 8.0), ("interval", 6.0),
-        ("bounded_until", 4.0),   # [H] harvest 2.6%
-        ("bounded_count", 1.5),   # [H] harvest 0.0% target-like, 0.5% overall
+        ("bounded_until", 7.0),   # dev 4.1% of spans are BOUND; was 1.0%
+        ("bounded_count", 4.0),   # count bounds never occur in the harvest,
+                          # so this can only come from deliberate sampling
         ("negated", 1.5),         # [H] harvest 0.33%
     ],
     "time_spec": [
         ("start_only", 35.0), ("start_end", 25.0), ("none", 14.0),
         ("ambiguous", 25.0),      # [H] harvest 25.9% bare hour, no meridiem
-        ("duration", 1.0),        # [H] harvest 0.98%
+        ("duration", 6.0),        # dev 2.5% of spans are DURATION; was 0.2%.
+                          # The harvest says 0.98% but the harvest is
+                          # parser test suites, which do not chat.
         ("tod", 3.3),             # [H] dev 3.2% -- time-of-day word, no clock
     ],
     "date_spec": [

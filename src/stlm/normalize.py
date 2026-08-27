@@ -40,7 +40,10 @@ class Trace:
 _MERIDIEM = re.compile(r"(a\.?m\.?|p\.?m\.?)\s*$", re.I)
 _NOON = re.compile(r"^(12\s*nn|nn|noon|12\s*n|12\s*noon)$", re.I)
 _MIDNIGHT = re.compile(r"^(12\s*mn|mn|midnight)$", re.I)
-_HHMM = re.compile(r"^(\d{1,2}):(\d{2})")
+# A dot is a real time separator in the wild -- "7.30pm" is as common as
+# "7:30pm" in handwritten notes, and it used to normalize to None, so the
+# span was tagged correctly and then produced no time at all.
+_HHMM = re.compile(r"^(\d{1,2})[:.](\d{2})")
 _MILITARY = re.compile(r"^([01]\d|2[0-3])([0-5]\d)\s*h?$", re.I)
 _BARE = re.compile(r"^(\d{1,2})\s*h?$", re.I)
 _TOD = {
@@ -53,7 +56,11 @@ _TOD_RE = re.compile(r"\b(dawn|morning|midday|afternoon|evening|tonight|night|du
 
 def normalize_time(text: str, policy: Policy = DEFAULT_POLICY) -> tuple[str | None, set[str]]:
     """Surface time -> 'HH:MM'. Returns (value, flags)."""
-    t = text.strip().lower().replace(".", "")
+    # Dots do two different jobs: separating h.mm and punctuating "a.m.".
+    # Promote the separator to a colon BEFORE stripping the rest, or
+    # "7.30pm" collapses to "730pm" and normalizes to nothing at all.
+    t = re.sub(r"(?<=\d)\.(?=\d{2})", ":", text.strip().lower())
+    t = t.replace(".", "")
     flags: set[str] = set()
 
     # A time-of-day word resolves to a symbol, not a clock time -- the collapse
