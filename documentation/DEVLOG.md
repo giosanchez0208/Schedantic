@@ -96,3 +96,28 @@ The framing immediately started deciding things:
 - Built the time-of-day interpreter. `morning`, `tmrw afternoon`, `at dawn` are answers to question 3. Measured 3.3% of real strings where it's load-bearing (no clock time present), 7.0% where it's redundant. Symbolic TOD:MORNING at L2, policy collapses it to 08:00 at L3, same as dates. Flagged time_approximate so the UI can say "~8am" instead of faking precision.
 
 TLDR: every simplification this week came from measuring, not from thinking harder. The IR has picked up four open questions since it was written, and all four came from implementing or annotating. None from imagination. Writing the spec first was still right, but doubting it was always an option.
+
+### Phase 8: Annotating everything, and the first honest number
+
+Annotated all 309 dev strings. Three friends wrote batch 01, four more wrote batch 02, and the second batch is where the corpus finally got interesting &mdash; they wrote the NOT-A-SCHEDULE cells. `Ms. Sunday in Accounts Payable`. `the pallet Sat in the alley for 2 hrs`. `AUGUST FROM THE FLOWER STALL`. I could not have invented those.
+
+First real scores against gold, one per question:
+
+| | rules | target |
+|---|---|---|
+| Q1 is it a schedule | 100% false-schedule | <= 5% |
+| Q2 what goes on it | 0.650 | >= 0.75 |
+| Q3 when | 0.820 / 0.857 | >= 0.90 |
+
+Q1 is a total failure and I'm fine with that. A regex that matches `Sat` cannot see whether the sentence is about scheduling. That is not a tuning problem, it's the wrong tool. Determining it is a _judgement_, and judgements are what the model is for. Same with the summary text. Same, partly, with where the temporal info actually is. Three judgements, which is exactly the three questions again.
+
+Two slot decisions, both settled by measuring instead of arguing:
+
+1. **Killed LOCATION.** A place is part of what goes on the calendar, so it belongs in the summary &mdash; same call I already made for PERSON. It was also the worst slot at 0.43 F1, and because summary is defined as the residual, every missed location became a summary error too. One fix, two metrics.
+2. **Kept PERSON.** Tried folding it in as well, since consistency said I should. It got _worse_ (0.689 to 0.643). `with X` turns out to be a reliable signal for where the title ends, so that span earns its place. Consistency lost to evidence.
+
+Then the chatter question. `gYm tmrw at 6pm bro dont forget your water bottle and towel please` &mdash; is the bro part of the title? I'd earlier said no, drop it. Changed my mind. `Gym, bro dont forget your water bottle and towel please` is exactly how the writer would want that note to look. It's charming. Keeping it also reversed OQ-14, which I'd closed the other way a day earlier.
+
+Where I got it wrong: I re-derived every gold summary using the same trim code the parser uses, then reported the score as if it meant something. It didn't. Gold and parser were making identical trim mistakes and scoring them as agreement &mdash; leading commas, dangling `til`, articles stripped off the front of titles. Fixed the trim, and the number fell from 0.717 to 0.650. The lower one is the real one.
+
+TLDR: gold that is _derived_ instead of _annotated_ stops being an independent measurement. If the thing being measured and the yardstick share code, the yardstick is decoration. Worth remembering before I touch the test set.
