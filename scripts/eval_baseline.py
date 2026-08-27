@@ -19,9 +19,9 @@ from collections import Counter
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from stlm.ir import L1, L2, Span, read_jsonl
+from stlm.ir import L1, L2, read_jsonl
 from stlm.normalize import l1_to_l2, parse
-from stlm.preannotate import with_summary
+from stlm.segment import spans_and_groups
 from stlm.score import l2_exact_match, rrule_equivalence, span_prf
 
 REF = dt.datetime(2026, 8, 27, 9, 0, 0)
@@ -44,13 +44,13 @@ def main() -> None:
     gold_l1 = [L1.from_json(r) for r in gold_rows]
     pred_l1, gold_l2, pred_l2 = [], [], []
     for g in gold_l1:
-        sp = with_summary(g.text)
+        # Same entry point parse() uses. It matters: the bare-weekday demotion
+        # runs per segment, so building spans any other way scores span types
+        # the pipeline never actually produced.
+        spans, groups = spans_and_groups(g.text)
         pred_l1.append(L1(
-            id=g.id, text=g.text,
-            spans=[Span(i=n, type=p.type, start=p.start, end=p.end, text=p.text)
-                   for n, p in enumerate(sp)],
-            event_groups=[[n for n, _ in enumerate(sp)]] if sp else [],
-            status="ok" if sp else "no_temporal"))
+            id=g.id, text=g.text, spans=spans, event_groups=groups,
+            status="ok" if spans else "no_temporal"))
         gold_l2.append(l1_to_l2(g)[0])
         pred_l2.append(parse(g.text, item_id=g.id)[0])
 
@@ -83,6 +83,9 @@ def main() -> None:
     m = l2_exact_match(gl2, pl2)
     r = rrule_equivalence(gl2, pl2, REF)
     print(f"\nQ3  WHEN?   [scored on the {len(ok_idx)} schedulable items]")
+    n_ok = [(g, p) for g, p in zip(gold_l1, pred_l2) if g.status == "ok"]
+    cnt = sum(1 for g, p in n_ok if len(g.event_groups) == len(p.events))
+    print(f"  event COUNT correct           {cnt}/{len(n_ok)} = {cnt/len(n_ok):.3f}")
     print(f"  temporal exact match          {m['temporal_exact_match']:.3f}   (target >= 0.90)")
     print(f"  RRULE occurrence-set equal    {r['occurrence_set_exact']:.3f}   (target >= 0.90)")
     print(f"  mean occurrence Jaccard       {r['mean_jaccard']:.3f}")

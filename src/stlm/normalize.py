@@ -553,11 +553,9 @@ def l1_to_l2(l1: L1, policy: Policy = DEFAULT_POLICY) -> tuple[L2, Trace]:
 
 def parse(text: str, item_id: str = "x", policy: Policy = DEFAULT_POLICY) -> tuple[L2, Trace]:
     """Full rule pipeline: raw text -> L2. This IS the M5 baseline."""
-    from .preannotate import with_summary
+    from .segment import spans_and_groups
 
-    spans = [Span(i=n, type=p.type, start=p.start, end=p.end, text=p.text)
-             for n, p in enumerate(with_summary(text))]
-    l1 = L1(id=item_id, text=text, spans=spans,
-            event_groups=[[s.i for s in spans]] if spans else [],
+    spans, groups = spans_and_groups(text)
+    l1 = L1(id=item_id, text=text, spans=spans, event_groups=groups,
             status="ok" if spans else "no_temporal")
     return l1_to_l2(l1, policy)

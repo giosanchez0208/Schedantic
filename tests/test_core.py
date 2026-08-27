@@ -296,18 +296,32 @@ def test_normalizer():
     check("every produced L2 validates", not l2.validate(), str(l2.validate()))
 
 
-def test_known_baseline_gap():
-    print("\n[M5] known gap: no event segmentation")
-    # The rule pipeline has no way to split one line into two events, so it
-    # flattens them and silently loses the second time. This is OQ-1 / M7.5,
-    # recorded as a test so it fails loudly the day segmentation lands.
+def test_event_segmentation():
+    print("\n[M7.5] event segmentation")
+    # This was the known gap: the pipeline flattened two events into one and
+    # silently lost the second time. Now asserted the other way round.
     l2, _ = parse("Monday 12pm, Wednesday 5pm Laboratory with Sir Jeff")
-    check("KNOWN GAP: multi-event flattens to 1 event (expected to fail later)",
-          len(l2.events) == 1,
-          f"got {len(l2.events)} -- if this now says 2, segmentation works; update the test")
-    if len(l2.events) == 1 and l2.events[0].rrule:
-        check("  and it merges both weekdays under one time (the RFC 5545 trap)",
-              l2.events[0].rrule.byday == ["MO", "WE"], str(l2.events[0].rrule.byday))
+    check("multi-event splits into 2 events", len(l2.events) == 2, str(len(l2.events)))
+    if len(l2.events) == 2:
+        pairs = sorted((e.rrule.byday[0] if e.rrule else None, e.dtstart.time)
+                       for e in l2.events)
+        check("each weekday keeps its own time (no RFC 5545 cross product)",
+              pairs == [("MO", "12:00"), ("WE", "17:00")], str(pairs))
+        check("the shared subject is on both events",
+              all(e.summary == "Laboratory with Sir Jeff" for e in l2.events),
+              str([e.summary for e in l2.events]))
+
+    # No spaces at all. Same structure, and the reason TIME_RE has a per-branch
+    # lookbehind now.
+    l2, _ = parse("Lab Mon12pm Wed5pm")
+    check("glued day+time still splits", len(l2.events) == 2, str(len(l2.events)))
+
+    # The far more common case: a day LIST is one event, not three. A wrong
+    # split corrupts a line that parsed fine, so this direction matters more.
+    for text in ("Mon Wed Fri 9am gym", "MWF 8-12NN CCC100 with Sir Jefferson",
+                 "gym tmrw, 7pm start"):
+        l2, _ = parse(text)
+        check(f"stays one event: {text!r}", len(l2.events) == 1, str(len(l2.events)))
 
 
 def test_negative_frames():
@@ -434,6 +448,14 @@ def test_holidays():
     check("holiday L2 validates", not l2.validate(), str(l2.validate()))
 
 
+
+def test_zz_all_checks_passed():
+    """check() only records failures, it does not raise. Under pytest that meant
+    a suite full of broken checks still reported "12 passed". Runs last, by
+    definition order, and is the thing that actually fails the run."""
+    assert not FAILURES, "\n".join(FAILURES)
+
+
 if __name__ == "__main__":
     test_fixtures_valid()
     test_jcal_emission()
@@ -443,7 +465,7 @@ if __name__ == "__main__":
     test_scorer_sanity()
     test_generator_integrity()
     test_normalizer()
-    test_known_baseline_gap()
+    test_event_segmentation()
     test_negative_frames()
     test_daysets()
     test_holidays()
