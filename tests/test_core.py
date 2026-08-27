@@ -354,7 +354,7 @@ def test_negative_frames():
           str([t for t in gen if "{" in t][:2]))
 
     rows = generate(3000, seed=5, profile="balanced")
-    negs = [r for r in rows if r["l1"]["status"] != "ok"]
+    negs = [r for r in rows if r["l1"]["status"] == "no_temporal"]
     check("negatives carry status=no_temporal and no event_groups",
           all(r["l1"]["status"] == "no_temporal" and not r["l1"]["event_groups"]
               for r in negs), "status/groups wrong")
@@ -363,6 +363,69 @@ def test_negative_frames():
           "a rejected string should still show what was declined")
     check("all generated negatives validate",
           not any(L1.from_json(r["l1"]).validate() for r in negs), "invalid L1")
+
+
+def test_refusal_frames():
+    print("\n[Q1] refusal frame generator (unresolvable / unrepresentable)")
+    import random as _r
+    from stlm import refusals as rf
+    from stlm.ir import read_jsonl as _rj
+    from stlm.normalize import parse as _parse
+
+    rng = _r.Random(1)
+    seen = {rf.sample(rng)[0].lower() for _ in range(20000)}
+    check(f"20k draws yield >=2000 distinct refusals (got {len(seen)})",
+          len(seen) >= 2000, "a handful of templates would not teach a class")
+
+    rng = _r.Random(2)
+    fams = {rf.sample(rng)[2] for _ in range(3000)}
+    check(f"all {len(rf.family_ids())} refusal families are reachable",
+          fams == set(rf.family_ids()), f"missing {set(rf.family_ids()) - fams}")
+
+    rng = _r.Random(3)
+    draws = [rf.sample(rng) for _ in range(400)]
+    check("no unfilled {SLOT} placeholders",
+          not any("{" in t for t, _, _, _ in draws),
+          str([t for t, _, _, _ in draws if "{" in t][:2]))
+    check("both statuses are produced",
+          {st for _, st, _, _ in draws} == {"unresolvable", "unrepresentable"},
+          str({st for _, st, _, _ in draws}))
+
+    # A refusal the rule parser trivially rejects teaches nothing. These strings
+    # look completely parseable, which is exactly why they are the ones that
+    # produce silent catastrophic errors.
+    fooled = sum(1 for t, _, _, _ in draws if _parse(t)[0].events)
+    check(f"generated refusals are hard: {fooled}/400 fool the rule parser",
+          fooled >= 360, "too easy -- they would not teach the refusal")
+
+    # THE contamination guard. Frames are derived from the 28 human examples, and
+    # the first version reproduced six of them verbatim because a template was
+    # the human sentence with one slot swapped. Those 28 are the eval set.
+    root = pathlib.Path(__file__).resolve().parents[1]
+    human = {r["text"].strip().lower() for r in _rj(root / "corpus" / "gold_l1.jsonl")
+             if r["status"] in ("unresolvable", "unrepresentable")}
+    gen = {t.strip().lower() for t, _, _, _ in
+           [rf.sample(_r.Random(s)) for s in range(4000)]}
+    overlap = human & gen
+    check(f"zero verbatim overlap with the {len(human)} human eval items",
+          not overlap, str(sorted(overlap)[:3]))
+
+    rows = generate(4000, seed=5, profile="balanced")
+    refs = [r for r in rows
+            if r["l1"]["status"] in ("unresolvable", "unrepresentable")]
+    check(f"generator emits refusals at all (got {len(refs)})", len(refs) > 0,
+          "2 of the 4 statuses used to have no training signal whatsoever")
+    check("refusals carry no event_groups",
+          all(not r["l1"]["event_groups"] for r in refs), "groups on a refusal")
+    check("refusals keep their text as a SUMMARY span",
+          all(any(s["type"] == "SUMMARY" for s in r["l1"]["spans"]) for r in refs),
+          "a refused string should still show what was declined")
+    check("all generated refusals validate",
+          not any(L1.from_json(r["l1"]).validate() for r in refs), "invalid L1")
+    check("all four statuses now appear in one balanced draw",
+          {r["l1"]["status"] for r in rows} ==
+          {"ok", "no_temporal", "unresolvable", "unrepresentable"},
+          str({r["l1"]["status"] for r in rows}))
 
 
 def test_daysets():
@@ -467,6 +530,7 @@ if __name__ == "__main__":
     test_normalizer()
     test_event_segmentation()
     test_negative_frames()
+    test_refusal_frames()
     test_daysets()
     test_holidays()
     print("\n" + "=" * 60)

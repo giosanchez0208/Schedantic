@@ -20,6 +20,7 @@ from dataclasses import dataclass, field
 
 from . import daysets as ds
 from . import negatives as neg
+from . import refusals as ref
 from . import lexicon as lx
 from .ir import L1, L2, DateTimeSpec, L2Event, RRule, Span
 
@@ -644,27 +645,68 @@ def generate_negative(rng: random.Random, idx: int) -> tuple[L1, L2, dict]:
     return l1, l2, cell
 
 
+def generate_refusal(rng: random.Random, idx: int) -> tuple[L1, L2, dict]:
+    """A string the system must REFUSE rather than guess, from refusals.py.
+
+    Covers the two statuses the generator used to emit zero of. Without these,
+    2 of the 4 classes Q1 is scored on have no training signal at all, and the
+    model can only ever learn to answer schedulable-or-not.
+
+    Same L1 shape as a negative: the words are still the title, so a UI can show
+    what it declined to schedule. What differs is the status, and the status is
+    correct by construction because the FRAME decided it.
+    """
+    text, status, family, flags = ref.sample(rng)
+    casing = rng.choice(["lower", "title", "mixed", "upper"])
+    text = apply_casing(rng, text, casing)
+    if rng.random() < 0.10:
+        text = typo(rng, text)
+
+    cell = {k: "n/a" for k in AXES}
+    cell["register"] = "informal"
+    cell["casing"] = casing
+    cell["refusal_family"] = family
+
+    spans = [Span(i=0, type="SUMMARY", start=0, end=len(text), text=text)]
+    l1 = L1(id=f"ref{idx:06d}", text=text, spans=spans, event_groups=[],
+            status=status, flags=sorted(flags))
+    l2 = L2(id=f"ref{idx:06d}", events=[], status=status, flags=sorted(flags))
+    return l1, l2, cell
+
+
 # Negatives follow the same balanced-vs-realistic split as the axes. The measured
 # rate in the human corpus is 13.6% (42 no_temporal of 309). Training Q1 wants
 # more than that; calibration wants the real figure.
 NEGATIVE_FRAC = {"balanced": 0.25, "realistic": 0.136}
 
+# Refusals, same reasoning. The measured rate is 6.9% (28 of 407 gold rows);
+# balanced roughly doubles it so the two rarest classes are learnable.
+REFUSAL_FRAC = {"balanced": 0.14, "realistic": 0.069}
+
 
 def generate(n: int, seed: int = 1337, negative_frac: float | None = None,
-             profile: str = "balanced") -> list[dict]:
+             profile: str = "balanced",
+             refusal_frac: float | None = None) -> list[dict]:
     """profile: "balanced" (uniform axes, for class coverage) or
     "realistic" (AXIS_PRIOR, for distribution calibration). See AXIS_PRIOR."""
     rng = random.Random(seed)
     rows = []
     if negative_frac is None:
         negative_frac = NEGATIVE_FRAC.get(profile, 0.136)
+    if refusal_frac is None:
+        refusal_frac = REFUSAL_FRAC.get(profile, 0.069)
     n_neg = int(n * negative_frac)
-    for i in range(n - n_neg):
+    n_ref = int(n * refusal_frac)
+    for i in range(n - n_neg - n_ref):
         l1, l2, cell = generate_one(rng, i, profile=profile)
         rows.append({"l1": l1.to_json(), "l2": l2.to_json(), "cell": cell,
                      "source": "synthetic", "profile": profile})
     for i in range(n_neg):
         l1, l2, cell = generate_negative(rng, i)
+        rows.append({"l1": l1.to_json(), "l2": l2.to_json(), "cell": cell,
+                     "source": "synthetic", "profile": profile})
+    for i in range(n_ref):
+        l1, l2, cell = generate_refusal(rng, i)
         rows.append({"l1": l1.to_json(), "l2": l2.to_json(), "cell": cell,
                      "source": "synthetic", "profile": profile})
     rng.shuffle(rows)
