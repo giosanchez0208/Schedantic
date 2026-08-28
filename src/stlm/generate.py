@@ -105,7 +105,8 @@ AXIS_PRIOR: dict[str, list[tuple[str, float]]] = {
         ("duration", 6.0),        # dev 2.5% of spans are DURATION; was 0.2%.
                           # The harvest says 0.98% but the harvest is
                           # parser test suites, which do not chat.
-        ("tod", 3.3),             # [H] dev 3.2% -- time-of-day word, no clock
+        ("tod", 5.5),             # dev 3.2% of LINES; 3.3 landed at 1.96% once
+                          # negatives and refusals took their share
     ],
     "date_spec": [
         ("none", 46.0), ("rel_simple", 16.0), ("rel_weekday", 14.0),
@@ -302,7 +303,7 @@ BYDAY_SETS_SINGLE = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"]
 COMMON_TIMES = [
     "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
     "11:00", "11:30", "12:00", "13:00", "13:30", "14:00", "15:00", "15:30",
-    "16:00", "17:00", "17:30", "18:00", "19:00", "20:00",
+    "16:00", "17:00", "17:30", "18:00", "19:00", "20:00", "00:00",
 ]
 
 
@@ -434,7 +435,7 @@ def _time_pair(rng: random.Random, cell: dict) -> tuple[str, str | None]:
 
 def _render_time(rng: random.Random, canon: str, cell: dict, force_bare: bool) -> str:
     if canon.startswith("TOD:"):
-        return rng.choice(sub.TOD_SURFACES[canon])
+        return rng.choice(sub.TOD_SURFACES[canon])  # bare; prefix is emitted separately
     surfaces = lx.TIMES.get(canon)
     if not surfaces:
         return canon
@@ -712,6 +713,12 @@ def generate_one(rng: random.Random, idx: int, cell: dict | None = None,
         if has_time:
             if temporal:
                 temporal.append(Chunk(" ", None))
+            if tstart and tstart.startswith("TOD:"):
+                # "at"/"in the" go in UNTAGGED, so the span is the bare word the
+                # annotation guide and every dev row actually use.
+                pre = wchoice(rng, sub.TOD_PREFIXES)
+                if pre:
+                    temporal.append(Chunk(pre, None))
             temporal.append(Chunk(_render_time(rng, tstart, cell, force_bare), "TSTART", [0]))
             if tend:
                 sep = wchoice(rng, lx.RANGE_SEPS)

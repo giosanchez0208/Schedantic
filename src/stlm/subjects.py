@@ -291,18 +291,25 @@ EXTRA_FIRST_NAMES: list[str] = [
 # in the parsing direction; this is the same table read the other way.
 
 TOD_SURFACES: dict[str, list[str]] = {
-    "TOD:DAWN": ["dawn", "at dawn", "before sunrise", "madaling araw",
-                 "first thing", "crack of dawn"],
-    "TOD:MORNING": ["morning", "in the morning", "mornings", "early morning",
-                    "am", "AM", "first thing in the morning", "umaga"],
-    "TOD:NOON": ["noon", "midday", "at noon", "lunchtime", "tanghali", "high noon"],
-    "TOD:AFTERNOON": ["afternoon", "in the afternoon", "afternoons",
-                      "late afternoon", "pm", "hapon"],
-    "TOD:EVENING": ["evening", "in the evening", "evenings", "early evening",
-                    "dusk", "gabi", "after dinner"],
-    "TOD:NIGHT": ["night", "nights", "tonight", "at night", "late night",
-                  "before bed", "evening"],
+    "TOD:DAWN": ["dawn", "sunrise", "daybreak", "madaling araw"],
+    "TOD:MORNING": ["morning", "mornings", "umaga", "AM", "am"],
+    "TOD:NOON": ["noon", "midday", "lunchtime", "tanghali", "noontime"],
+    "TOD:AFTERNOON": ["afternoon", "afternoons", "hapon", "PM", "pm"],
+    "TOD:EVENING": ["evening", "evenings", "dusk", "gabi", "sundown"],
+    "TOD:NIGHT": ["night", "nights", "tonight", "nighttime"],
 }
+
+# The preposition is NOT part of the span. Every time-of-day TSTART in dev is a
+# bare word -- "Morning", "NIGHT", "AFTERNOONS", "nights" -- with no "at" and no
+# "in the". The generator used to bake them into the surface ("at noon" as one
+# span), so the model learned that "at" STARTS a time, and "lunch at noon" came
+# back as TSTART "at" with the actual word untagged. These are emitted as
+# untagged text before the span instead.
+TOD_PREFIXES: list[tuple[str, float]] = [
+    ("", 6.0), ("at ", 4.0), ("in the ", 3.0), ("this ", 1.5),
+    ("early ", 1.0), ("late ", 1.0), ("every ", 1.0), ("sometime in the ", 0.5),
+    ("by ", 0.5), ("around ", 0.5),
+]
 
 
 # --- date surfaces the generator was missing ---------------------------------
