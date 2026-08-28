@@ -293,10 +293,18 @@ EXTRA_FIRST_NAMES: list[str] = [
 TOD_SURFACES: dict[str, list[str]] = {
     "TOD:DAWN": ["dawn", "sunrise", "daybreak", "madaling araw"],
     "TOD:MORNING": ["morning", "mornings", "umaga", "AM", "am"],
-    "TOD:NOON": ["noon", "midday", "lunchtime", "tanghali", "noontime"],
+    # "noon"/"midday" are EXACTLY 12:00 and live in lexicon.TIMES with the
+    # other clock surfaces. Only the loose ones belong here.
+    "TOD:NOON": ["lunchtime", "tanghali", "lunch time"],
     "TOD:AFTERNOON": ["afternoon", "afternoons", "hapon", "PM", "pm"],
     "TOD:EVENING": ["evening", "evenings", "dusk", "gabi", "sundown"],
     "TOD:NIGHT": ["night", "nights", "tonight", "nighttime"],
+    # "later" is a real answer to "when", just a loose one. Refusing it
+    # would be the only place the system declines to guess, and Policy
+    # guesses everywhere else -- bare 1-6 becomes PM, no time becomes
+    # midnight, no end becomes an hour.
+    "TOD:LATER": ["later", "mamaya", "later today", "in a bit",
+                  "afterwards", "in a while", "sometime later"],
 }
 
 # The preposition is NOT part of the span. Every time-of-day TSTART in dev is a

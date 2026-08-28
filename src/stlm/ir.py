@@ -58,7 +58,7 @@ WEEKDAYS = ("MO", "TU", "WE", "TH", "FR", "SA", "SU")
 # Kept symbolic for the same reason dates are: the collapse to a clock time is a
 # policy decision, and policy must be changeable without re-annotating. See OQ-15.
 TOD_SYMBOLS = ("TOD:DAWN", "TOD:MORNING", "TOD:NOON", "TOD:AFTERNOON",
-               "TOD:EVENING", "TOD:NIGHT")
+               "TOD:EVENING", "TOD:NIGHT", "TOD:LATER")
 
 # Symbolic date prefixes. L2 NEVER stores a resolved datetime -- see spec 1.
 REL_SYMBOLS = (

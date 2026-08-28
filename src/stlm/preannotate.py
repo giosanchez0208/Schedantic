@@ -70,7 +70,9 @@ TIME_RE = re.compile(
 # collapses it to a clock time at L3. See OQ-15.
 TOD_RE = re.compile(
     r"\b(?:(?:this|next|nxt|tmrw|tomorrow|every|late|early)\s+)?"
-    r"(morning|afternoon|evening|tonight|night|dawn|dusk|midday)\b", re.I)
+    r"(mornings?|afternoons?|evenings?|tonight|nights?|nighttime|dawn|dusk"
+    r"|midday|noon|noontime|midnight|lunchtime|later|mamaya"
+    r"|umaga|hapon|gabi|tanghali|sunrise|sundown|daybreak)\b", re.I)
 
 # Anything after "@" that is just a time. "gym @ 6" and "standup @ 9am" are
 # times; "lab @ CS Bldg" is a place.
@@ -203,13 +205,6 @@ def propose(text: str) -> list[Proposal]:
     for m in PERSON_RE.finditer(text):
         _add(out, "PERSON", m, "person", 1)
 
-    # Only tag a time-of-day word when no explicit clock time is present --
-    # "this afternoon at 3" states the real time, and TOD would be redundant at
-    # best and contradictory at worst. Measured: 7.0% redundant vs 3.3% load-bearing.
-    if not re.search(r"\d", text):
-        for m in TOD_RE.finditer(text):
-            _add(out, "TSTART", m, "time_of_day", 1)
-
     times = [m for m in TIME_RE.finditer(text)]
     consumed = [(p.start, p.end) for p in out]
 
@@ -217,6 +212,19 @@ def propose(text: str) -> list[Proposal]:
         return any(a >= s and b <= e for s, e in consumed)
 
     kept = [m for m in times if not inside(m.start(1), m.end(1))]
+
+    # Only tag a time-of-day word when no explicit clock time SURVIVES --
+    # "this afternoon at 3" states the real time, and TOD would be redundant at
+    # best and contradictory at worst. Measured: 7.0% redundant vs 3.3% load-bearing.
+    #
+    # The test is "does a clock time survive", not "does the line contain a
+    # digit". The digit version also fired on "sun nights til nov 30", where the
+    # digit belongs to a date, and on "sat mornings, 6 of them", where it is a
+    # count. Four dev rows lost their time that way, and because normalize.py
+    # did not know the plurals either, GOLD lost it too and the two agreed.
+    if not kept:
+        for m in TOD_RE.finditer(text):
+            _add(out, "TSTART", m, "time_of_day", 1)
     # A time immediately followed by a range separator and another time is a
     # START/END pair; anything else is a lone start.
     i = 0

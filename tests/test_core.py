@@ -565,6 +565,26 @@ def test_holidays():
 
 
 
+def test_no_control_characters_in_source():
+    """No stray control bytes anywhere in the tree.
+
+    Writing regexes through a shell heredoc has three times now turned a
+    backslash-b into an actual backspace (0x08). The file still compiles, the
+    pattern still looks right in every editor, and the lookahead silently cannot
+    match. It cost a debugging session each time, so it is a test now.
+    """
+    root = pathlib.Path(__file__).resolve().parents[1]
+    bad = []
+    for sub in ("src", "scripts", "tests"):
+        for f in (root / sub).rglob("*.py"):
+            raw = f.read_bytes()
+            for code in (0x07, 0x08, 0x0b, 0x0c, 0x1b):
+                if bytes([code]) in raw:
+                    bad.append(f"{f.relative_to(root)}: 0x{code:02x}")
+    check(f"no control bytes in any source file ({len(bad)} found)", not bad,
+          "; ".join(bad[:4]))
+
+
 def test_zz_all_checks_passed():
     """check() only records failures, it does not raise. Under pytest that meant
     a suite full of broken checks still reported "12 passed". Runs last, by
@@ -585,6 +605,7 @@ if __name__ == "__main__":
     test_negative_frames()
     test_refusal_frames()
     test_bio_tagging_round_trip()
+    test_no_control_characters_in_source()
     test_daysets()
     test_holidays()
     print("\n" + "=" * 60)

@@ -50,12 +50,22 @@ class Policy:
     all_day_time: dt.time = dt.time(0, 0)
     # Event with a start but no end.
     default_duration_minutes: int = 60
+    # "later" is the one time-of-day word that is relative to WHEN IT WAS SAID
+    # rather than to a fixed hour: "gym later" at 9am and at 8pm mean different
+    # clock times. So it gets an offset from the reference instead of a slot in
+    # tod_times, rounded to the next half hour because nobody means 12:47.
+    later_offset_minutes: int = 180
+    later_round_to_minutes: int = 30
+    # If the offset would spill past this, "later" was said too late in the day
+    # to mean today; it lands here instead of rolling into tomorrow silently.
+    later_latest: dt.time = dt.time(21, 0)
     # Where each time-of-day word lands. These are the midpoint-ish hours people
     # actually mean, not the middle of the literal range. Change here, not in gold.
     tod_times: dict = field(default_factory=lambda: {
         "TOD:DAWN": dt.time(6, 0), "TOD:MORNING": dt.time(8, 0),
         "TOD:NOON": dt.time(12, 0), "TOD:AFTERNOON": dt.time(14, 0),
         "TOD:EVENING": dt.time(18, 0), "TOD:NIGHT": dt.time(20, 0),
+        "TOD:LATER": dt.time(15, 0),
     })
 
 
@@ -197,10 +207,38 @@ def build_rrule(rule: RRule, dtstart: dt.datetime, policy: Policy = DEFAULT_POLI
     return du.rrule(**kw)
 
 
+def _resolve_later(d: dt.date, ref: dt.datetime, policy: Policy) -> dt.datetime:
+    """"later" -> a while after the reference time, on the resolved day.
+
+    Guessing here rather than refusing is the same call the rest of Policy makes:
+    a bare hour of 1-6 becomes PM, a date with no time becomes midnight, a start
+    with no end gets an hour. "Later" is no less defensible than any of those --
+    it says "not now, still today" -- and it carries time_approximate so the UI
+    can show it as a guess.
+    """
+    base = ref + dt.timedelta(minutes=policy.later_offset_minutes)
+    step = policy.later_round_to_minutes
+    if step:
+        over = (base.minute % step)
+        if over or base.second:
+            base = (base.replace(second=0, microsecond=0)
+                    + dt.timedelta(minutes=step - over))
+    if d != ref.date():
+        # "later" pinned to another day has no now to be later than, so it falls
+        # back to the same fixed treatment the other time-of-day words get.
+        return dt.datetime.combine(d, policy.tod_times.get("TOD:LATER", dt.time(15, 0)))
+    if base.time() > policy.later_latest or base.date() != d:
+        return dt.datetime.combine(d, policy.later_latest)
+    return dt.datetime.combine(d, base.time().replace(second=0, microsecond=0))
+
+
 def resolve_event(ev: L2Event, ref: dt.datetime, policy: Policy = DEFAULT_POLICY) -> dict:
     """Resolve one L2 event to concrete datetimes."""
     d = resolve_date(ev.dtstart.date, ref, ev.rrule, policy)
-    if ev.dtstart.time and ev.dtstart.time.startswith("TOD:"):
+    if ev.dtstart.time == "TOD:LATER":
+        start = _resolve_later(d, ref, policy)
+        all_day = False
+    elif ev.dtstart.time and ev.dtstart.time.startswith("TOD:"):
         start = dt.datetime.combine(d, policy.tod_times[ev.dtstart.time])
         all_day = False
     elif ev.dtstart.time:
