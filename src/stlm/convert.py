@@ -59,13 +59,29 @@ class Policy:
     # If the offset would spill past this, "later" was said too late in the day
     # to mean today; it lands here instead of rolling into tomorrow silently.
     later_latest: dt.time = dt.time(21, 0)
+    # The SPAN each part-of-day word covers, so MOD can mean something. TIMEX2
+    # carries START/MID/END as a separate attribute; without a window there is
+    # nowhere for "early morning" to land that differs from "morning".
+    tod_windows: dict = field(default_factory=lambda: {
+        "TOD:DAWN": (dt.time(5, 0), dt.time(7, 0)),
+        "TOD:MORNING": (dt.time(6, 0), dt.time(11, 0)),
+        "TOD:NOON": (dt.time(11, 30), dt.time(13, 0)),
+        "TOD:AFTERNOON": (dt.time(12, 0), dt.time(17, 0)),
+        "TOD:EVENING": (dt.time(17, 0), dt.time(21, 0)),
+        "TOD:NIGHT": (dt.time(19, 0), dt.time(23, 0)),
+        "TOD:DAYTIME": (dt.time(8, 0), dt.time(17, 0)),
+    })
+    # An APPROX clock time ("around 3") is still that time; the flag is what
+    # tells a UI to render it loosely. Kept as a knob rather than a constant so
+    # the decision stays in one place, like every other default here.
+    approx_shift_minutes: int = 0
     # Where each time-of-day word lands. These are the midpoint-ish hours people
     # actually mean, not the middle of the literal range. Change here, not in gold.
     tod_times: dict = field(default_factory=lambda: {
         "TOD:DAWN": dt.time(6, 0), "TOD:MORNING": dt.time(8, 0),
         "TOD:NOON": dt.time(12, 0), "TOD:AFTERNOON": dt.time(14, 0),
         "TOD:EVENING": dt.time(18, 0), "TOD:NIGHT": dt.time(20, 0),
-        "TOD:LATER": dt.time(15, 0),
+        "TOD:DAYTIME": dt.time(9, 0), "TOD:LATER": dt.time(15, 0),
     })
 
 
@@ -85,6 +101,17 @@ def resolve_date(symbol: str, ref: dt.datetime, rule: RRule | None = None,
         return ref.date() + dt.timedelta(days=1)
     if symbol == "REL:DAY_AFTER_TOMORROW":
         return ref.date() + dt.timedelta(days=2)
+    if symbol == "REL:WEEKEND":
+        # TIMEX2 spells this 1999-W28-WE. The next Saturday is the start of it.
+        ahead = (5 - ref.weekday()) % 7
+        return ref.date() + dt.timedelta(days=ahead)
+    if symbol.startswith("REL:SEASON_"):
+        # Northern-hemisphere academic usage, which is how "fall semester" and
+        # "spring break" reach this corpus. Resolves to the season's first day,
+        # next occurrence, exactly like REL:MONTH_.
+        first = {"SP": 3, "SU": 6, "FA": 9, "WI": 12}[symbol[len("REL:SEASON_"):]]
+        y = ref.year if (first, 1) >= (ref.month, ref.day) else ref.year + 1
+        return dt.date(y, first, 1)
     if symbol.startswith("REL:DOM_"):
         # The next occurrence of that day-of-month, this month or next. Months
         # that are too short are skipped rather than clamped: "the 31st" in
@@ -207,6 +234,32 @@ def build_rrule(rule: RRule, dtstart: dt.datetime, policy: Policy = DEFAULT_POLI
     return du.rrule(**kw)
 
 
+def apply_mod(spec, base: dt.time, policy: Policy) -> dt.time:
+    """Shift a time-of-day within its window according to MOD.
+
+    START/MID/END are TIMEX2's way of saying early/middle/late, and they only
+    have meaning against a span: "early morning" is the start of the morning
+    window, not a different word for morning. Anything without a window, or any
+    other MOD, is returned unchanged -- BEFORE/AFTER/LESS_THAN and friends
+    qualify the RELATION, not the clock reading, and belong in the flags.
+    """
+    mod = getattr(spec, "mod", None)
+    sym = getattr(spec, "time", None)
+    if not mod or not sym:
+        return base
+    window = policy.tod_windows.get(sym)
+    if window is None:
+        return base
+    lo, hi = window
+    if mod == "START":
+        return lo
+    if mod == "END":
+        return hi
+    if mod == "MID":
+        return base
+    return base
+
+
 def _resolve_later(d: dt.date, ref: dt.datetime, policy: Policy) -> dt.datetime:
     """"later" -> a while after the reference time, on the resolved day.
 
@@ -239,7 +292,8 @@ def resolve_event(ev: L2Event, ref: dt.datetime, policy: Policy = DEFAULT_POLICY
         start = _resolve_later(d, ref, policy)
         all_day = False
     elif ev.dtstart.time and ev.dtstart.time.startswith("TOD:"):
-        start = dt.datetime.combine(d, policy.tod_times[ev.dtstart.time])
+        start = dt.datetime.combine(
+            d, apply_mod(ev.dtstart, policy.tod_times[ev.dtstart.time], policy))
         all_day = False
     elif ev.dtstart.time:
         h, m = (int(x) for x in ev.dtstart.time.split(":"))
@@ -249,9 +303,30 @@ def resolve_event(ev: L2Event, ref: dt.datetime, policy: Policy = DEFAULT_POLICY
         start = dt.datetime.combine(d, policy.all_day_time)
         all_day = True
 
+    # A dtend with its own DATE is a multi-day event -- "Oct 21-23 conference".
+    # The field has always existed on DateTimeSpec and resolve_event simply never
+    # looked at it, which is why that whole family was labelled unrepresentable.
+    # RFC 5545 has no trouble with it: one VEVENT, DTSTART on the 21st and DTEND
+    # on the 24th, exclusive.
     end = None
-    if ev.dtend and ev.dtend.time and ev.dtend.time.startswith("TOD:"):
-        end = dt.datetime.combine(d, policy.tod_times[ev.dtend.time])
+    if ev.dtend and ev.dtend.date:
+        end_day = resolve_date(ev.dtend.date, ref, None, policy)
+        if end_day < d:
+            end_day = d
+        if ev.dtend.time and not ev.dtend.time.startswith("TOD:"):
+            h, m = (int(x) for x in ev.dtend.time.split(":"))
+            end = dt.datetime.combine(end_day, dt.time(h, m))
+        elif ev.dtend.time:
+            end = dt.datetime.combine(
+                end_day, apply_mod(ev.dtend, policy.tod_times[ev.dtend.time], policy))
+        else:
+            # All-day multi-day: DTEND is exclusive, so the day after the last.
+            end = dt.datetime.combine(end_day + dt.timedelta(days=1),
+                                      policy.all_day_time)
+            all_day = True
+    elif ev.dtend and ev.dtend.time and ev.dtend.time.startswith("TOD:"):
+        end = dt.datetime.combine(
+            d, apply_mod(ev.dtend, policy.tod_times[ev.dtend.time], policy))
         if end <= start:
             end += dt.timedelta(days=1)
     elif ev.dtend and ev.dtend.time:

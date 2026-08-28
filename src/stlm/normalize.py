@@ -99,6 +99,9 @@ _BARE = re.compile(r"^(\d{1,2})\s*h?$", re.I)
 # these in sync by hand is what let "umaga" and "lunchtime" be emitted
 # into training data that the pipeline itself could not parse.
 _TOD = {
+    # TIMEX2's DT token: morning + afternoon, i.e. working hours.
+    "daytime": "TOD:DAYTIME", "during the day": "TOD:DAYTIME",
+    "working hours": "TOD:DAYTIME", "office hours": "TOD:DAYTIME",
     "dawn": "TOD:DAWN",
     "daybreak": "TOD:DAWN",
     "madaling araw": "TOD:DAWN",
@@ -135,7 +138,7 @@ _TOD = {
     "mamaya na": "TOD:LATER",
 }
 
-_TOD_RE = re.compile(r"\b(sometime\ later|madaling\ araw|after\ dinner|later\ today|first\ thing|afternoons|afterwards|in\ a\ while|lunch\ time|lunchtime|afternoon|nighttime|mamaya\ na|daybreak|mornings|tanghali|evenings|in\ a\ bit|sunrise|morning|evening|sundown|tonight|nights|mamaya|umaga|hapon|night|later|dawn|dusk|gabi|am|pm)\b", re.I)
+_TOD_RE = re.compile(r"\b(during\ the\ day|sometime\ later|working\ hours|madaling\ araw|office\ hours|after\ dinner|later\ today|first\ thing|afternoons|afterwards|in\ a\ while|lunch\ time|lunchtime|afternoon|nighttime|mamaya\ na|daybreak|mornings|tanghali|evenings|in\ a\ bit|daytime|sunrise|morning|evening|sundown|tonight|nights|mamaya|umaga|hapon|night|later|dawn|dusk|gabi|am|pm)\b", re.I)
 
 
 
@@ -408,6 +411,90 @@ _DATE_LEAD = re.compile(r"^(?:on|by|due|before|starting|start|from|at)\s+", re.I
 
 
 
+# --- MOD (TIMEX2 Table 4-9) ---------------------------------------------------
+# We used to flatten all of this into the single flag time_approximate, so
+# "early morning", "late night", "mid-February" and "about 5" were one thing --
+# or, for "mid-", nothing at all. The word is right there in the span; the only
+# reason it was lost is that L2 had no field for it.
+
+_MOD_PATTERNS: list[tuple[str, str]] = [
+    ("START", r"\b(early|start of|beginning of|top of|first thing)\b"),
+    ("END", r"\b(late|end of|tail end of|latter)\b"),
+    ("MID", r"\b(mid|middle of|midway through)\b|\bmid-"),
+    ("APPROX", r"\b(about|around|approx\.?|approximately|abt|roughly|circa|~|ish)\b|\b\d+ish\b"),
+    ("BEFORE", r"\b(before|prior to|ahead of|by)\b"),
+    ("AFTER", r"\b(after|following|past)\b"),
+    ("EQUAL_OR_LESS", r"\b(no more than|at most|up to)\b"),
+    ("EQUAL_OR_MORE", r"\b(at least|no less than)\b"),
+    ("LESS_THAN", r"\b(less than|under|nearly|almost)\b"),
+    ("MORE_THAN", r"\b(more than|over|upwards of)\b"),
+]
+_MOD_RE = [(m, re.compile(pat, re.I)) for m, pat in _MOD_PATTERNS]
+
+
+def parse_mod(text: str) -> str | None:
+    """The TIMEX2 modifier carried by a span, if any. First match wins.
+
+    Order matters: the list runs from the most specific reading to the least, so
+    "no more than" is EQUAL_OR_LESS rather than MORE_THAN, and "early" beats the
+    "by" inside a longer phrase.
+    """
+    if not text:
+        return None
+    for mod, rx in _MOD_RE:
+        if rx.search(text):
+            return mod
+    return None
+
+
+# --- fuzzy frequency ----------------------------------------------------------
+# "mostly Sundays", "2-3x a week", "almost weekly". TIMEX2 encodes these with
+# FREQ=LESS_THAN_EVERY or QUANT=X; we keep the rule and mark it inexact rather
+# than refusing outright, which is the same call Policy makes everywhere else.
+_FREQ_APPROX = re.compile(
+    r"\b(mostly|usually|generally|typically|often|sometimes|occasionally"
+    r"|more or less|give or take|on and off|now and then)\b|\d\s*-\s*\d\s*x", re.I)
+_FREQ_LESS = re.compile(r"\b(almost|nearly|about|roughly|around|approx\.?)\s+"
+                        r"(daily|weekly|monthly|every)\b", re.I)
+
+
+def parse_recur_mod(text: str) -> str | None:
+    """APPROX / LESS_THAN for a recurrence that is a tendency, not a rule."""
+    if not text:
+        return None
+    if _FREQ_LESS.search(text):
+        return "LESS_THAN"
+    if _FREQ_APPROX.search(text):
+        return "APPROX"
+    return None
+
+
+# --- multi-day date ranges ----------------------------------------------------
+# "Oct 21-23 conference". DateTimeSpec.dtend.date has existed the whole time and
+# nothing ever filled it, which is why this family was labelled unrepresentable.
+_RANGE_MD = re.compile(
+    r"^(?:the\s+)?(\w{3,9})\.?\s*(\d{1,2})\s*[-\u2013\u2014]\s*(\d{1,2})$", re.I)
+
+
+def normalize_date_range(text: str) -> tuple[str | None, str | None, set[str]]:
+    """"Oct 21-23" -> (start symbol, end symbol, flags). (None, None, set()) if
+    the text is not a range."""
+    t = re.sub(r"\s+", " ", text.strip().lower())
+    m = _RANGE_MD.match(t)
+    if not m:
+        return None, None, set()
+    mon = _MONTHS.get(m.group(1)[:3].lower())
+    d1, d2 = int(m.group(2)), int(m.group(3))
+    if not mon or not (1 <= d1 <= 31 and 1 <= d2 <= 31) or d2 < d1:
+        return None, None, set()
+    return f"REL:MD_{mon}_{d1}", f"REL:MD_{mon}_{d2}", {"multi_day"}
+
+
+_BARE_MONTH = re.compile(
+    r"^(?:the\s+)?(?:mid-?|early|late|start of|end of)?\s*"
+    r"(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*$", re.I)
+
+
 def normalize_date(text: str) -> tuple[str | None, set[str]]:
 
     t = re.sub(r"\s+", " ", text.strip().lower())
@@ -433,6 +520,15 @@ def normalize_date(text: str) -> tuple[str | None, set[str]]:
             return sym, hflags
 
 
+
+    m = re.match(r"^(?:(?:this|next|the|last)\s+)?(?:coming\s+)?(spring|summer|fall|autumn|winter)"
+                 r"(?:\s+(?:semester|term|break))?$", t)
+    if m:
+        code = {"spring": "SP", "summer": "SU", "fall": "FA",
+                "autumn": "FA", "winter": "WI"}[m.group(1)]
+        return f"REL:SEASON_{code}", {"relative_date"}
+    if re.match(r"^(?:(?:this|next|the|last)\s+)?(?:coming\s+)?weekends?$", t):
+        return "REL:WEEKEND", {"relative_date"}
 
     if re.match(r"^(the\s+)?day\s+after\s+(tomorrow|tmrw|tmr)$", t):
 
@@ -477,6 +573,12 @@ def normalize_date(text: str) -> tuple[str | None, set[str]]:
         return f"REL:THIS_{code}", {"relative_date", "recurrence_ambiguous"}
 
 
+
+    m = _BARE_MONTH.match(t)
+    if m:
+        mon = _MONTHS.get(m.group(1)[:3].lower())
+        if mon:
+            return f"REL:MONTH_{mon}", set()
 
     m = _MD.match(t)
 
@@ -676,6 +778,25 @@ _MONTHLY_ORDINAL_RE = re.compile(
 
 
 
+# "ALT FRIDAYS", "alternate tuesdays" -- an interval word and a day in ONE
+# span. normalize_recur only understood them as separate spans, so a gold
+# row annotated with the whole phrase produced no recurrence at all.
+_ALT_DAY = re.compile(
+    r"^(alt|alternate|alternating|every other|eo|e/o)\s+([a-z/ ]+)$", re.I)
+
+
+def _split_alt(parts: list[str]) -> list[str]:
+    """Expand "alt fridays" into ["alt", "fridays"] so both halves land."""
+    out = []
+    for x in parts:
+        m = _ALT_DAY.match(x.strip())
+        if m and _daycodes(m.group(2)):
+            out.extend([m.group(1), m.group(2)])
+        else:
+            out.append(x)
+    return out
+
+
 def normalize_recur(texts: list[str]) -> tuple[RRule | None, set[str], list[str]]:
 
     """Merge every RECUR span into one rule.
@@ -704,7 +825,8 @@ def normalize_recur(texts: list[str]) -> tuple[RRule | None, set[str], list[str]
 
     freq = None
 
-
+    # "ALT FRIDAYS" arrives as one span and means the same as ["alt", "Fridays"].
+    texts = _split_alt(texts)
 
     for raw in texts:
 
@@ -972,6 +1094,19 @@ def l1_to_l2(l1: L1, policy: Policy = DEFAULT_POLICY) -> tuple[L2, Trace]:
 
         all_flags |= rflags
 
+        # "mostly Sundays", "2-3x a week" -- a tendency, not a rule. TIMEX2
+        # encodes these with FREQ=LESS_THAN_EVERY or QUANT=X. Keep the rule and
+        # mark it inexact; refusing would throw away the Sunday as well.
+        if rrule is not None:
+
+            rmod = next((x for x in (parse_recur_mod(r) for r in pick("RECUR")) if x), None)
+
+            if rmod:
+
+                rrule.mod = rmod
+
+                all_flags.add("frequency_approximate")
+
 
 
         hint = meridiem_hint(l1.text)
@@ -1018,7 +1153,27 @@ def l1_to_l2(l1: L1, policy: Policy = DEFAULT_POLICY) -> tuple[L2, Trace]:
 
         date_val = None
 
+        end_date_val = None
+
+        date_src = None
+
         for d in pick("DATE"):
+
+            # A RANGE first. "Oct 21-23" fills dtstart.date AND dtend.date, which
+            # is one multi-day VEVENT; normalize_date alone reads only the 21 and
+            # silently drops the rest, which is why that family read
+            # unrepresentable when the schema could hold it all along.
+            lo, hi, rgflags = normalize_date_range(d)
+
+            if lo:
+
+                date_val, end_date_val, date_src = lo, hi, d
+
+                all_flags |= rgflags
+
+                trace.note(f"events[{g_no}].dtstart.date", "normalize_date_range", d)
+
+                break
 
             date_val, dflags = normalize_date(d)
 
@@ -1026,9 +1181,35 @@ def l1_to_l2(l1: L1, policy: Policy = DEFAULT_POLICY) -> tuple[L2, Trace]:
 
             if date_val:
 
+                date_src = d
+
                 trace.note(f"events[{g_no}].dtstart.date", "normalize_date", d)
 
                 break
+
+        # MOD, the TIMEX2 modifier. It is an attribute OF the expression, not a
+        # part of it: gold tags a time-of-day as a bare word ("Morning", "NIGHT"),
+        # so "early" sits just outside the span and reading only the span text
+        # finds nothing. Look at the span and the short run of text before it.
+        def _mod_for(typ: str) -> str | None:
+            for sp in spans:
+                if sp.type != typ:
+                    continue
+                lead = l1.text[max(0, sp.start - 16):sp.start]
+                return parse_mod(sp.text) or parse_mod(lead)
+            return None
+
+        start_mod = _mod_for("TSTART")
+
+        if start_mod is None and date_src:
+
+            start_mod = parse_mod(date_src) or _mod_for("DATE")
+
+        end_mod = _mod_for("TEND")
+
+        if "APPROX" in (start_mod, end_mod):
+
+            all_flags.add("time_approximate")
 
 
 
@@ -1116,9 +1297,10 @@ def l1_to_l2(l1: L1, policy: Policy = DEFAULT_POLICY) -> tuple[L2, Trace]:
 
             summary=summary,
 
-            dtstart=DateTimeSpec(date=date_val, time=start_val),
+            dtstart=DateTimeSpec(date=date_val, time=start_val, mod=start_mod),
 
-            dtend=DateTimeSpec(time=end_val) if end_val else None,
+            dtend=(DateTimeSpec(date=end_date_val, time=end_val, mod=end_mod)
+                   if (end_val or end_date_val) else None),
 
             duration_minutes=duration if not end_val else None,
 

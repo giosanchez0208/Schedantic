@@ -50,6 +50,10 @@ FLAGS = (
     "recurrence_ambiguous",     # bare single weekday: one-off or weekly? See guide.
     "offset_from_anchor",       # "the Monday after <named date>"
     "excluded_dates",           # EXDATE emitted from the holiday table
+    # A recurrence that is a tendency rather than a rule ("mostly Sundays").
+    "frequency_approximate",
+    # dtstart and dtend on different DAYS -- one multi-day VEVENT.
+    "multi_day",
 )
 
 WEEKDAYS = ("MO", "TU", "WE", "TH", "FR", "SA", "SU")
@@ -57,8 +61,21 @@ WEEKDAYS = ("MO", "TU", "WE", "TH", "FR", "SA", "SU")
 # Time-of-day words name a RANGE, not a point ("morning" is roughly 06:00-11:00).
 # Kept symbolic for the same reason dates are: the collapse to a clock time is a
 # policy decision, and policy must be changeable without re-annotating. See OQ-15.
+# Part-of-day tokens. TIMEX2 Table 4-8 calls these MO/MI/AF/EV/NI/DT; the
+# names are ours but the inventory is theirs, with two deliberate deltas.
+# DAYTIME is their DT ("morning + afternoon, basically working hours").
+# Their MI (mid-day) is NOT here: we read "midday" as exactly 12:00, which
+# an M0 fixture asserts, and making it a window would lose that precision.
+# LATER is ours -- their nearest equivalent is FUTURE_REF plus an anchor.
 TOD_SYMBOLS = ("TOD:DAWN", "TOD:MORNING", "TOD:NOON", "TOD:AFTERNOON",
-               "TOD:EVENING", "TOD:NIGHT", "TOD:LATER")
+               "TOD:EVENING", "TOD:NIGHT", "TOD:DAYTIME", "TOD:LATER")
+
+# The MOD attribute, verbatim from TIMEX2 Table 4-9 / TimeML 1.2. We carried
+# one boolean, time_approximate, and threw away the difference between
+# "early morning", "late night", "about 5" and "no more than 10 days".
+MODS = ("BEFORE", "AFTER", "ON_OR_BEFORE", "ON_OR_AFTER",
+        "LESS_THAN", "MORE_THAN", "EQUAL_OR_LESS", "EQUAL_OR_MORE",
+        "START", "MID", "END", "APPROX")
 
 # Symbolic date prefixes. L2 NEVER stores a resolved datetime -- see spec 1.
 REL_SYMBOLS = (
@@ -79,6 +96,11 @@ REL_SYMBOLS = (
     # and L2 had nowhere to put it, so the date silently vanished on the way to
     # jCal -- a date span that parses and then resolves to nothing.
     *[f"REL:DOM_{d}" for d in range(1, 32)],
+    # Season and weekend tokens, TIMEX2 Tables 4-4 and 4-7. Seasons are
+    # northern-hemisphere academic usage ("fall semester"), which is how they
+    # appear in this corpus; they are NOT a claim about Philippine weather.
+    *[f"REL:SEASON_{s}" for s in ("SP", "SU", "FA", "WI")],
+    "REL:WEEKEND",
 )
 
 # Computed named dates. These are patterned rather than enumerated -- Easter
@@ -198,9 +220,16 @@ class RRule:
     bymonthday: list[int] = field(default_factory=list)
     until: str | None = None  # symbolic: "ABS:YYYY-MM-DD" or REL:*
     count: int | None = None
+    # "mostly Sundays", "2-3x a week", "almost weekly". TIMEX2 encodes these
+    # with FREQ=LESS_THAN_EVERY or QUANT=X over an X-placeholder value; we
+    # keep the rule and mark it inexact. Emitting a best-effort rule with a
+    # flag beats refusing, which is the same call Policy makes everywhere.
+    mod: str | None = None   # APPROX | LESS_THAN | MORE_THAN
 
     def validate(self) -> list[str]:
         errs = []
+        if self.mod is not None and self.mod not in MODS:
+            errs.append(f"unknown rrule mod {self.mod!r}")
         if self.freq not in ("DAILY", "WEEKLY", "MONTHLY", "YEARLY"):
             errs.append(f"bad freq {self.freq!r}")
         if self.interval < 1:
@@ -226,9 +255,12 @@ class RRule:
 class DateTimeSpec:
     date: str | None = None  # symbolic only
     time: str | None = None  # "HH:MM"
+    mod: str | None = None   # one of MODS; see TIMEX2 Table 4-9
 
     def validate(self) -> list[str]:
         errs = []
+        if self.mod is not None and self.mod not in MODS:
+            errs.append(f"unknown mod {self.mod!r}")
         if self.date is not None:
             if not is_valid_date_symbol(self.date):
                 errs.append(f"date {self.date!r} is not a known symbolic date")

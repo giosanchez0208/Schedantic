@@ -43,7 +43,12 @@ def _plausible_daycode(text: str, m: re.Match) -> bool:
 
 
 EVERY_RE = re.compile(
-    r"\b((?:every|each|tuwing)\s+(?:other\s+|second\s+|third\s+|\d+\s+|two\s+|three\s+)?"
+    r"\b("
+    # "ALT FRIDAYS" is every other Friday. Gold annotates the whole phrase
+    # as one RECUR span and normalize splits it; without this the parser saw
+    # only the day and produced interval=1 against a gold interval of 2.
+    r"(?:alt|alternate|alternating)\s+[A-Za-z]+(?:day|days)?|"
+    r"(?:every|each|tuwing)\s+(?:other\s+|second\s+|third\s+|\d+\s+|two\s+|three\s+)?"
     r"[A-Za-z]+(?:day|days)?|daily|everyday|every\s?day|biweekly|bi-weekly|fortnightly|weekly)\b",
     re.I,
 )
@@ -72,13 +77,34 @@ TOD_RE = re.compile(
     r"\b(?:(?:this|next|nxt|tmrw|tomorrow|every|late|early)\s+)?"
     r"(mornings?|afternoons?|evenings?|tonight|nights?|nighttime|dawn|dusk"
     r"|midday|noon|noontime|midnight|lunchtime|later|mamaya"
-    r"|umaga|hapon|gabi|tanghali|sunrise|sundown|daybreak)\b", re.I)
+    r"|umaga|hapon|gabi|tanghali|sunrise|sundown|daybreak"
+    r"|daytime|during the day|working hours|office hours)\b", re.I)
 
 # Anything after "@" that is just a time. "gym @ 6" and "standup @ 9am" are
 # times; "lab @ CS Bldg" is a place.
 _TIME_LIKE = re.compile(r"^[0-9]{1,4}(?::[0-9]{2})?[ ]*(?:[ap][.]?m[.]?|nn|mn|h)?$", re.I)
 
 RANGE_SEP_RE = re.compile(r"^\s*(?:-|–|—|to|till|til|until|thru|through|~|--)\s*$", re.I)
+
+# NOT PROPOSED. A bare month name is indistinguishable from a person's name
+# or a verb without the sentence around it: on dev this fired 6 times and was
+# wrong 6 times (MARCH OVER THERE, ms. april, AUNT JUNE, A JUNE BUG). L2 can
+# still hold REL:MONTH_ -- the model has the context to decide, the regex does
+# not. Kept here so the decision is visible rather than silently absent.
+BAREMONTH_RE = re.compile(
+    r"\b((?:mid-?|early|late|the start of|the end of)?\s*"
+    r"(?:january|february|march|april|june|july|august|september|october"
+    r"|november|december|jan|feb|mar|apr|jun|jul|aug|sept|sep|oct|nov|dec)"
+    r"(?![a-z0-9]))(?!\s*\d)", re.I)
+
+# NOT PROPOSED, same reason: "spring low tide" and "summer program" are
+# adjectives, and "Spring Break" is an institution period gold refuses.
+SEASON_RE = re.compile(
+    r"\b((?:(?:this|next|last|the)\s+)?(?:coming\s+)?"
+    r"(?:spring|summer|fall|autumn|winter)(?:\s+(?:semester|term|break))?)\b", re.I)
+
+WEEKEND_RE = re.compile(
+    r"\b((?:(?:this|next|last|the)\s+)?(?:coming\s+)?weekends?)\b", re.I)
 
 RELDATE_RE = re.compile(
     r"\b((?:the\s+)?day\s+after\s+(?:tomorrow|tmrw|tmr)"
@@ -147,7 +173,12 @@ NEGATION_RE = re.compile(
 # Words that turn a weekday into a series. Without one of these (or a bound)
 # a lone weekday is read as a single upcoming occurrence.
 _REPEAT_MARKER = re.compile(
-    r"\b(every|each|tuwing|daily|weekly|biweekly|bi-weekly|fortnightly|alt|other|weekdays?|weekends?)\b", re.I)
+    r"\b(every|each|tuwing|daily|weekly|biweekly|bi-weekly|fortnightly|alt"
+    r"|other|weekdays?|weekends?"
+    # A PLURAL weekday is a recurrence on its own: nobody writes
+    # "wednesdays" for one Wednesday. Without this the demotion below
+    # reads it as a single upcoming date.
+    r"|mondays|tuesdays|wednesdays|thursdays|fridays|saturdays|sundays)\b", re.I)
 
 
 @dataclass
@@ -198,6 +229,8 @@ def propose(text: str) -> list[Proposal]:
             _add(out, "RECUR", m, "daycode", 1)
     for m in RELDATE_RE.finditer(text):
         _add(out, "DATE", m, "reldate", 1)
+    for m in WEEKEND_RE.finditer(text):
+        _add(out, "DATE", m, "weekend", 1)
     for m in ABSDATE_RE.finditer(text):
         _add(out, "DATE", m, "absdate", 1)
     for m in hol.HOLIDAY_RE.finditer(text):
